@@ -1,0 +1,62 @@
+<div style="padding-bottom: 50px;" id="manageUsersContainer" ng-controller="usersCtrl">
+    <div style="padding: 10px; ">
+        <br>
+        <h3>All Users</h3>
+        <table id="manageUsersTable" data-search="true" data-search-time-out=0 data-pagination="true">
+            <thead class="thead-dark">
+                <tr>
+                    <th data-formatter="formatIDCount">#</th>
+                    <th data-field="name">Name</th>
+                    <th data-field="email">Email</th>
+                    <th data-field="city">City</th>
+                    <th data-field="mobile">Mobile</th>
+                    <th data-formatter="formatManageButton">Manage User</th>
+                    <th data-formatter="formatDeleteButton">Delete User</th>
+                </tr>
+            </thead>
+        </table>
+        <br>
+        <h3>Add new user</h3>
+        <br>
+        <p ng-if="isWrong" style="color: red;">Please make sure you have filled in all the required fields.</p>
+        <form autocomplete="off" ng-submit="createUser()">
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>Full Name*</label>
+                    <input autocomplete="off" class="form-control" ng-model="userName" placeholder="Full Name (Ex. Joe Doe)" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>Email*</label>
+                    <input class="form-control" type="email" ng-model="userEmail" placeholder="user@email.com" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>Password*</label>
+                    <input class="form-control" type="password" ng-model="userPassword" placeholder="Password" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>Mobile</label>
+                    <input class="form-control" ng-model="userMobile" placeholder="Mobile No (Ex. 01112233456)">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>Country</label>
+                    <input id="userCountry" class="form-control" ng-model="userCountry" placeholder="Country (Ex. Egypt)">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>City</label>
+                    <input id="userCity" class="form-control" ng-model="userCity" placeholder="City (Ex. Cairo)">
+                </div>
+            </div>
+            <input type="submit" class="btn btn-primary" value="Add New User" />
+        </form>
+    </div>
+</div>

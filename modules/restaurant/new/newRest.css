@@ -1,0 +1,42 @@
+#newRestContainer {
+    margin-top: 30px;
+}
+
+#newRestForm {
+    margin-top: 25px;
+}
+
+.subRestFormTitle {
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.tags-check-container {
+    margin-bottom: 10px;
+}
+
+#map {
+    height: 400px;
+}
+
+.map-control {
+    margin-top: 30px;
+}
+
+.map-control label {
+    font-weight: bold;
+}
+
+/* .map-control-button {
+    margin-top: 32px;
+} */
+
+.map-control-button-container {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+#manual-branch-container {
+    margin-top: 30px;
+}

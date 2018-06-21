@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html ng-app="digAPP" ng-controller="rootCtrl">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Dig n' Pick</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
+        crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="theme.css">
+    <link rel="stylesheet" type="text/css" href="modules/restaurant/new/newRest.css">
+    <link rel="stylesheet" type="text/css" href="modules/restaurant/edit/editRest.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.css">
+    <link rel="stylesheet" href="bootstrap-table.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="bower_components/angular-spinner/dist/angular-spinner.min.js"></script>
+</head>
+
+<body style="background-color: #f2f2f2">
+
+    <div ng-if="$root.isLoading" class="overlay">
+        <span us-spinner="{
+                              lines: 11,
+                              length: 0,
+                              width: 28,
+                              radius: 61,
+                              scale: 0.45,
+                              corners: 1,
+                              color: '#129afe',
+                              fadeColor: 'transparent',
+                              opacity: 0.25,
+                              rotate: 0,
+                              direction: 1,
+                              speed: 2.2,
+                              trail: 100, 
+                              fps: 20,
+                              zIndex: 2e9, 
+                              className: 'spinner', 
+                              top: '50%',
+                              left: '50%', 
+                              shadow: none, 
+                              position: 'absolute'
+                              }"></span>
+    </div>
+
+    <ui-view>
+
+    </ui-view>
+
+    <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyCX4KRrTFjZWXp7ABFFN-8Q5jCFTTKvSLY",
+            authDomain: "dignpick.firebaseapp.com",
+            databaseURL: "https://dignpick.firebaseio.com",
+            projectId: "dignpick",
+            storageBucket: "dignpick.appspot.com",
+            messagingSenderId: "649798915536"
+        };
+        firebase.initializeApp(config);
+
+        // Initialize Cloud Firestore through Firebase
+        var db = firebase.firestore();
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuBi2a8Vd3oLr6KLlsZXoCIH5HNADzeQw&callback=angular.noop"
+        type="text/javascript"></script>
+    <script src="http://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+        crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+    <script src="modules/root/ctrl_root.js"></script>
+    <script src="modules/login/ctrl_login.js"></script>
+    <script src="modules/home/ctrl_home.js"></script>
+    <script src="modules/root/router.js"></script>
+    <script src="modules/restaurant/manage/ctrl_manageRest.js"></script>
+    <script src="modules/restaurant/new/ctrl_newRest.js"></script>
+    <script src="modules/restaurant/edit/ctrl_editRest.js"></script>
+    <script src="modules/users/ctrl_users.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/extensions/editable/bootstrap-table-editable.min.js"></script>
+    <script src="scripts/x-editable.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+</body>
+
+</html>

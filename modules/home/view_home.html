@@ -1,0 +1,39 @@
+<div class="navbar-style" ng-controller="homeCtrl">
+    <div id="app" class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-faded">
+            <a class="navbar-brand" href="#">Dig n' Pick</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="navbarNavDropdown" class="navbar-collapse collapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'manageRest'}">
+                        <a class="nav-link" ui-sref="manageRest">Manage Restaurants</a>
+                    </li>
+                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'newRest'}">
+                        <a class="nav-link" ui-sref="newRest">New Restaurant</a>
+                    </li>
+                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'viewAddUsers'}">
+                        <a class="nav-link" ui-sref="viewAddUsers">Manage Users</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" style="cursor: pointer;" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{userName}}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="#">Settings</a>
+                            <a class="dropdown-item" style="cursor: pointer;" ng-click="logout()">Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+<div class="container">
+    <ui-view></ui-view>
+</div>
