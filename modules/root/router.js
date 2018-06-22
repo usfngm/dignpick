@@ -130,6 +130,9 @@ angular
             if (to == 'manageUser') {
                 $rootScope.selectedTab = 'viewAddUsers';
             }
+            else if (to == 'newRest' || to == 'editRest') {
+                $rootScope.selectedTab = 'manageRest';
+            }
             else
                 $rootScope.selectedTab = to;
 

@@ -1,5 +1,5 @@
 <div class="navbar-style" ng-controller="homeCtrl">
-    <div id="app" class="container">
+    <div id="app">
         <nav class="navbar navbar-expand-lg navbar-dark bg-faded">
             <a class="navbar-brand" href="#">Dig n' Pick</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
@@ -8,14 +8,20 @@
             </button>
             <div id="navbarNavDropdown" class="navbar-collapse collapse">
                 <ul class="navbar-nav mr-auto">
+                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'dashboard'}">
+                        <a class="nav-link" ui-sref="dashboard">Dashboard</a>
+                    </li>
                     <li class="nav-item" ng-class="{active:$root.selectedTab == 'manageRest'}">
                         <a class="nav-link" ui-sref="manageRest">Manage Restaurants</a>
                     </li>
-                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'newRest'}">
-                        <a class="nav-link" ui-sref="newRest">New Restaurant</a>
-                    </li>
                     <li class="nav-item" ng-class="{active:$root.selectedTab == 'viewAddUsers'}">
                         <a class="nav-link" ui-sref="viewAddUsers">Manage Users</a>
+                    </li>
+                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'manageAds'}">
+                        <a class="nav-link" ui-sref="viewAddUsers">Manage Ads</a>
+                    </li>
+                    <li class="nav-item" ng-class="{active:$root.selectedTab == 'appSettings'}">
+                        <a class="nav-link" ui-sref="viewAddUsers">App Settings</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">

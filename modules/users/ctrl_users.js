@@ -36,7 +36,7 @@ angular
         }
 
         $scope.manageUser = (index) => {
-            $state.go('manageUser', {'userID': data[index].uid});
+            $state.go('manageUser', { 'userID': data[index].uid });
         }
 
         $scope.deleteUser = (index) => {

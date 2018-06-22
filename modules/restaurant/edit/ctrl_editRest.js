@@ -7,6 +7,7 @@ angular
         $scope.uid = $stateParams.restID;
         console.log('EDIT ' + $scope.uid);
         $('#editRestContainer').hide();
+        $('#editRestContainerBack').hide();
 
         const fillBranchsTable = () => {
             $('#branchesList').bootstrapTable('removeAll');
@@ -46,11 +47,13 @@ angular
                         $rootScope.isLoading = false;
                         $rootScope.$digest();
                         $('#editRestContainer').show();
+                        $('#editRestContainerBack').show();
                     } else {
                         console.log("No branches");
                         $rootScope.isLoading = false;
                         $rootScope.$digest();
                         $('#editRestContainer').show();
+                        $('#editRestContainerBack').show();
                     }
                 })
                 .catch(function (error) {
@@ -318,6 +321,10 @@ angular
                     $rootScope.isLoading = false;
                     $rootScope.$digest();
                 });
+        }
+
+        $scope.back = () => {
+            $state.go('manageRest');
         }
 
         init_map = () => {

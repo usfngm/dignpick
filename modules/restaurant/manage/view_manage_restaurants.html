@@ -2,16 +2,19 @@
     <div style="padding: 10px; ">
         <br>
         <h3>All Restaurants</h3>
-        <table id="table"  data-search="true" data-search-time-out=0 data-pagination="true">
+        <table id="table" data-search="true" data-search-time-out=0 data-pagination="true">
             <thead class="thead-dark">
                 <tr>
                     <th data-field="id">#</th>
                     <th data-field="name">Name</th>
                     <th data-formatter="formatEditPlaceButton">Edit Info</th>
                     <th data-formatter="formatEditMenuButton">Manage Menu</th>
-                    <th data-field="delete">Delete</th>
+                    <th data-formatter="formatDeletePlaceButton">Delete</th>
                 </tr>
             </thead>
         </table>
+    </div>
+    <div class="form-group col-md-12">
+        <button ng-click="createPlace()" class="form-control btn btn-success">Create Restaurant</button>
     </div>
 </div>

@@ -237,6 +237,10 @@ angular
                 });
         }
 
+        $scope.back = () => {
+            $state.go('manageRest');
+        };
+
         init_map = () => {
             map = new google
                 .maps

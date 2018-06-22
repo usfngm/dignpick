@@ -39,6 +39,11 @@ angular
                 $('#manageSingleUserContainer').show();
             });
 
+
+        $scope.back = () => {
+            $state.go('viewAddUsers');
+        }
+
         $scope.updateUser = () => {
 
             $rootScope.isLoading = true;
