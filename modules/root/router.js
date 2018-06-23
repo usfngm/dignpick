@@ -52,6 +52,34 @@ angular
             parent: 'home'
         }
 
+        var editMenuDishesState = {
+            name: 'editMenuDishes',
+            url: '/editDishes',
+            templateUrl: 'modules/menu/dishes/view_edit_dishes.html',
+            parent: 'editMenu'
+        }
+
+        var editMenuDrinksState = {
+            name: 'editMenuDrinks',
+            url: '/editDrinks',
+            templateUrl: 'modules/menu/drinks/view_edit_drinks.html',
+            parent: 'editMenu'
+        }
+
+        var editMenuDessertsState = {
+            name: 'editMenuDesserts',
+            url: '/editDesserts',
+            templateUrl: 'modules/menu/desserts/view_edit_desserts.html',
+            parent: 'editMenu'
+        }
+
+        var editMenuShishaState = {
+            name: 'editMenuShisha',
+            url: '/editShisha',
+            templateUrl: 'modules/menu/shisha/view_edit_shisha.html',
+            parent: 'editMenu'
+        }
+
         var viewAddUsersState = {
             name: 'viewAddUsers',
             url: '/viewUsers',
@@ -74,6 +102,10 @@ angular
         $stateProvider.state(editMenuState);
         $stateProvider.state(viewAddUsersState);
         $stateProvider.state(manageUser);
+        $stateProvider.state(editMenuDishesState);
+        $stateProvider.state(editMenuDrinksState);
+        $stateProvider.state(editMenuDessertsState);
+        $stateProvider.state(editMenuShishaState);
 
     })
     .run(function ($rootScope, $transitions, $state, $window) {
@@ -130,11 +162,15 @@ angular
             if (to == 'manageUser') {
                 $rootScope.selectedTab = 'viewAddUsers';
             }
-            else if (to == 'newRest' || to == 'editRest' || to == 'editMenu') {
+            else if (to == 'newRest' || to == 'editRest' || to == 'editMenu' || to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
                 $rootScope.selectedTab = 'manageRest';
             }
             else
                 $rootScope.selectedTab = to;
+
+            if (to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
+                $rootScope.editMenuSelectedTab = to;
+            }
 
             return true;
         });

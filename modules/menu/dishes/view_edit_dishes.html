@@ -1,0 +1,71 @@
+<div id="editDishesContainer" ng-controller="editDishes">
+    <table id="mainDishTable" data-search="true" data-search-time-out=0 data-pagination="true">
+        <thead class="thead-dark">
+            <tr>
+                <th data-formatter="formatID">#</th>
+                <th data-field="name">Dish Name</th>
+                <th data-formatter="formatDishPrice">Price</th>
+                <th data-formatter="formatEditDishButton">Edit</th>
+                <th data-formatter="formatDeleteDishButton">Delete</th>
+            </tr>
+        </thead>
+    </table>
+    <div class="form-group col-md-12">
+        <button ng-click="newItem()" class="form-control btn btn-primary">New Dish Item</button>
+    </div>
+
+    <!-- New Dish Modal -->
+    <div class="modal fade" id="createDishModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Item</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ng-submit="createItemSubmit()">
+                    <div class="modal-body">
+                        <label>Item Name</label>
+                        <input class='form-control' type='text' placeholder="Dish Name (Ex. Chicken MCM)" ng-model='newItemName' required/>
+                        <br>
+                        <label>Item Price</label>
+                        <input class='form-control' type='number' placeholder="Dish Price (Ex. 200)" ng-model='newItemPrice' required/>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" class="btn btn-primary" value="Add" />
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Dish Modal -->
+    <div class="modal fade" id="editDishModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Item</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ng-submit="editItemSubmit()">
+                    <div class="modal-body">
+                        <label>Item Name</label>
+                        <input class='form-control' type='text' ng-model='currentDishName' required/>
+                        <br>
+                        <label>Item Price</label>
+                        <input class='form-control' type='number' ng-model='currentDishPrice' required/>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" class="btn btn-primary" value="Edit" />
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

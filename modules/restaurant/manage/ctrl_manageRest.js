@@ -33,7 +33,11 @@ angular
         }
 
         $scope.editMenu = (index) => {
-            $state.go('editMenu', { 'restID': data[index].uid });
+            $rootScope.currentRest = data[index].name;
+            $state.go('editMenu',
+                {
+                    'restID': data[index].uid
+                });
         }
 
         $scope.deletePlace = (index) => {
