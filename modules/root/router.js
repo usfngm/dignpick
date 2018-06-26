@@ -87,6 +87,13 @@ angular
             parent: 'home'
         }
 
+        var manageAds = {
+            name: 'manageAds',
+            url: '/manageAds',
+            templateUrl: 'modules/managedsA/view_test.html',
+            parent: 'home'
+        }
+
         var manageUser = {
             name: 'manageUser',
             url: '/manageUser/:userID',
@@ -106,6 +113,7 @@ angular
         $stateProvider.state(editMenuDrinksState);
         $stateProvider.state(editMenuDessertsState);
         $stateProvider.state(editMenuShishaState);
+        $stateProvider.state(manageAds);
 
     })
     .run(function ($rootScope, $transitions, $state, $window) {

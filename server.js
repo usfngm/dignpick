@@ -16,4 +16,4 @@ app.use(bodyParser.urlencoded({extended:false, limit:'50mb'}));
 app.use(express.static(path.join(__dirname, '')));
 
 
-app.listen(3000, () => console.log('HRM System Listening on port 3000!'));
+app.listen(3000, () => console.log('Dig n Pick Admin Portal System Listening on port 3000!'));
