@@ -87,17 +87,17 @@ angular
             parent: 'home'
         }
 
-        var manageAds = {
-            name: 'manageAds',
-            url: '/manageAds',
-            templateUrl: 'modules/managedsA/view_test.html',
-            parent: 'home'
-        }
-
         var manageUser = {
             name: 'manageUser',
             url: '/manageUser/:userID',
             templateUrl: 'modules/users/manage/view_manage_user.html',
+            parent: 'home'
+        }
+
+        var manageAds = {
+            name: 'manageAds',
+            url: '/manageAds',
+            templateUrl: 'modules/manage_ads/view_manage.html',
             parent: 'home'
         }
 
@@ -169,13 +169,11 @@ angular
                 .name;
             if (to == 'manageUser') {
                 $rootScope.selectedTab = 'viewAddUsers';
-            }
-            else if (to == 'newRest' || to == 'editRest' || to == 'editMenu' || to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
+            } else if (to == 'newRest' || to == 'editRest' || to == 'editMenu' || to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
                 $rootScope.selectedTab = 'manageRest';
-            }
-            else
+            } else 
                 $rootScope.selectedTab = to;
-
+            
             if (to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
                 $rootScope.editMenuSelectedTab = to;
             }
@@ -185,6 +183,6 @@ angular
     });
 
 // /*     A Helper method for hiding the navigation bar when the     Login page
-// is dispayed */ var handleNavBarVisibility = (from, to, $rootScope) => {
-// if (to === 'login') {         $rootScope.hideNavBar = true;     } else {
-//    $rootScope.hideNavBar = false;     } }
+// is dispayed */ var handleNavBarVisibility = (from, to, $rootScope) => { if
+// (to === 'login') {         $rootScope.hideNavBar = true;     } else {
+// $rootScope.hideNavBar = false;     } }
