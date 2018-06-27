@@ -1,16 +1,74 @@
 <div style="padding-top: 30px;" ng-controller="adsCtrl">
     <h3>Manage Ads</h3>
     <table id="manageAdsTable" data-search="true" data-search-time-out=0 data-pagination="true">
-            <thead class="thead-dark">
-                <tr>
-                    <th data-formatter="formatIDCount">#</th>
-                    <th data-field="title">Title</th>
-                    <th data-field="type">Type</th>
-                    <th data-field="from">From</th>
-                    <th data-field="to">To</th>
-                    <th data-field="status">Status</th>
-                    <th data-formatter="formatManageButton">Manage</th>
-                </tr>
-            </thead>
-        </table>
+        <thead class="thead-dark">
+            <tr>
+                <th data-formatter="formatIDCount">#</th>
+                <th data-field="title">Title</th>
+                <th data-field="type">Type</th>
+                <th data-field="from">From</th>
+                <th data-field="to">To</th>
+                <th data-field="status">Status</th>
+                <th data-field="enabled">Enabled</th>
+                <th data-formatter="formatManageButton">Manage</th>
+            </tr>
+        </thead>
+    </table>
+    <div style="margin-top: 20px;" class="form-group col-md-12">
+        <button ng-click="newAd()" class="form-control btn btn-primary">New Ad</button>
+    </div>
+
+    <div class="modal fade" id="createAdModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Ad</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ng-submit="createItemSubmit()">
+                    <div class="modal-body">
+                        <label>Title</label>
+                        <input class='form-control' type='text' placeholder="Ad Title" ng-model='adTitle' required/>
+                        <br>
+                        <label>Type</label>
+                        <select class="form-control" ng-model="adType">
+                            <option value="imageAd">Image Ad</option>
+                            <option value="videoAd">Video Ad</option>
+                        </select>
+                        <br>
+                        <label>From</label>
+                        <input class='form-control' type='date' ng-model='fromDate' required/>
+                        <br>
+                        <label>To</label>
+                        <input class='form-control' type='date' ng-model='toDate' required/>
+                        <br>
+                        <label>Enabled</label>
+                        <select class="form-control" ng-model="adEnabled">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                        <br>
+                        <label>{{adType == 'imageAd' ? 'Image Upload' : 'Video Upload'}}</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" accept="image/*, video/*" id="customFile">
+                            <label class="custom-file-label" for="customFile">{{fileName}}</label>
+                        </div>
+                        <br>
+                        <div class="progress pb position-relative">
+                            <div id="adFormPB" class="progress-bar progress-bar-animated progress-bar-striped active" role="progressbar" aria-valuenow="60"
+                                aria-valuemin="0" aria-valuemax="100" style="width: 0%;" />
+
+                            <span class="justify-content-center d-flex position-absolute w-100 progress-text">{{uploadProgress + '%'}}</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" class="btn btn-primary" value="Add" />
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

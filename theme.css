@@ -75,3 +75,19 @@ body, html {
 .editable-submit, .editable-cancel {
     display: none;
 }
+
+.pb {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    height: 30px;
+}
+
+.progress-text {
+    color: #FFF;
+    text-shadow:
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+     -1px 1px 0 #000,
+      1px 1px 0 #000;
+    top: 7px;
+}

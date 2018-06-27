@@ -11,7 +11,7 @@ angular
 
         /*
         The login router view
-    */
+        */
         var loginState = {
             name: 'login',
             url: '/login',
@@ -124,12 +124,12 @@ angular
         /*
          Listen for changes on navigation before
          they actually happen
-     */
+        */
         $transitions.onBefore({}, function (transition) {
             /*
             A Helper snippet for checking whether the user is logged in
             or not before navigating to some pages
-        */
+            */
             var user = $window.sessionStorage.user;
             if (transition.to().name === 'login') { // If navigating to login
                 if (user) { // If logged in
@@ -143,9 +143,9 @@ angular
                 }
 
                 /*
-                A helper snippet for highlighting the
-                selected tab
-            */
+                    A helper snippet for highlighting the
+                    selected tab
+                */
                 var to = transition
                     .to()
                     .name;
