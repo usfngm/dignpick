@@ -76,10 +76,11 @@ body, html {
     display: none;
 }
 
-.pb {
+#pb {
     margin-top: 20px;
     margin-bottom: 10px;
     height: 30px;
+    visibility: hidden;
 }
 
 .progress-text {
@@ -90,4 +91,8 @@ body, html {
      -1px 1px 0 #000,
       1px 1px 0 #000;
     top: 7px;
+}
+
+.modal-content {
+    background-color: #f2f2f2;
 }
