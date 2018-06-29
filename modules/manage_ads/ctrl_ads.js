@@ -2,7 +2,7 @@ angular
     .module("digAPP")
     .controller('adsCtrl', function ($scope, $rootScope, $state, $stateParams, $window) {
         $('#manageAdsContainer').hide();
-        $scope.adType = 'imageAd';
+        $scope.adType = 'Image';
         $scope.uploadProgress = 0;
         $scope.adEnabled = 'yes';
         $scope.fileName = "Choose File";
@@ -46,7 +46,7 @@ angular
                         };
                         data.push(temp);
                     });
-                $('#manageAdsTable').bootstrapTable({data: data});
+                $('#manageAdsTable').bootstrapTable({ data: data });
                 $rootScope.isLoading = false;
                 $rootScope.$digest();
                 $('#manageAdsContainer').show();
@@ -101,159 +101,181 @@ angular
 
             // Listen for state changes, errors, and completion of the upload.
             uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-                    function (snapshot) {
-                // Get task progress, including the number of bytes uploaded and the total
-                // number of bytes to be uploaded
-                var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                console.log('Upload is ' + progress + '% done');
-                onProgress(progress);
-                switch (snapshot.state) {
-                    case firebase.storage.TaskState.PAUSED: // or 'paused'
-                        console.log('Upload is paused');
-                        break;
-                    case firebase.storage.TaskState.RUNNING: // or 'running'
-                        console.log('Upload is running');
-                        break;
+                function (snapshot) {
+                    // Get task progress, including the number of bytes uploaded and the total
+                    // number of bytes to be uploaded
+                    var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    console.log('Upload is ' + progress + '% done');
+                    onProgress(progress);
+                    switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED: // or 'paused'
+                            console.log('Upload is paused');
+                            break;
+                        case firebase.storage.TaskState.RUNNING: // or 'running'
+                            console.log('Upload is running');
+                            break;
+                    }
+                }, function (error) {
+
+                    // A full list of error codes is available at
+                    // https://firebase.google.com/docs/storage/web/handle-errors
+                    switch (error.code) {
+                        case 'storage/unauthorized':
+                            $('#createAdModalSubmitBtn').val('Add');
+                            $('#createAdModalSubmitBtn').removeAttr("disabled");
+                            $('#createAdModalDismissBtn').removeAttr("disabled");
+                            $('#createAdModalCloseBtn').removeAttr("disabled");
+                            $('#adTitleForm').removeAttr("disabled");
+                            $('#adTypeForm').removeAttr("disabled");
+                            $('#fromDateForm').removeAttr("disabled");
+                            $('#toDateForm').removeAttr("disabled");
+                            $('#adEnabledForm').removeAttr("disabled");
+                            $('#customFile').removeAttr("disabled");
+                            $scope.uploadProgress = 0;
+                            $('#adFormPB').css('width', 0 + '%');
+                            $('#pb').css('visibility', 'hidden');
+                            $scope.$digest();
+                            toastr.error("Unknown Server Error");
+                            break;
+
+                        case 'storage/canceled':
+                            $('#createAdModalSubmitBtn').val('Add');
+                            $('#createAdModalSubmitBtn').removeAttr("disabled");
+                            $('#createAdModalDismissBtn').removeAttr("disabled");
+                            $('#createAdModalCloseBtn').removeAttr("disabled");
+                            $('#adTitleForm').removeAttr("disabled");
+                            $('#adTypeForm').removeAttr("disabled");
+                            $('#fromDateForm').removeAttr("disabled");
+                            $('#toDateForm').removeAttr("disabled");
+                            $('#adEnabledForm').removeAttr("disabled");
+                            $('#customFile').removeAttr("disabled");
+                            $scope.uploadProgress = 0;
+                            $('#adFormPB').css('width', 0 + '%');
+                            $('#pb').css('visibility', 'hidden');
+                            $scope.$digest();
+                            toastr.error("Unknown Server Error");
+                            break;
+
+                        case 'storage/unknown':
+                            $('#createAdModalSubmitBtn').val('Add');
+                            $('#createAdModalSubmitBtn').removeAttr("disabled");
+                            $('#createAdModalDismissBtn').removeAttr("disabled");
+                            $('#createAdModalCloseBtn').removeAttr("disabled");
+                            $('#adTitleForm').removeAttr("disabled");
+                            $('#adTypeForm').removeAttr("disabled");
+                            $('#fromDateForm').removeAttr("disabled");
+                            $('#toDateForm').removeAttr("disabled");
+                            $('#adEnabledForm').removeAttr("disabled");
+                            $('#customFile').removeAttr("disabled");
+                            $scope.uploadProgress = 0;
+                            $('#adFormPB').css('width', 0 + '%');
+                            $('#pb').css('visibility', 'hidden');
+                            $scope.$digest();
+                            toastr.error("Unknown Server Error");
+                            break;
+                    }
+                }, function () {
+                    // Upload completed successfully, now we can get the download URL
+                    var fileLoc;
+                    uploadTask
+                        .snapshot
+                        .ref
+                        .getDownloadURL()
+                        .then(function (downloadURL) {
+                            fileLoc = downloadURL;
+                            var from = $scope.fromDate;
+                            var to = $scope.toDate;
+                            var adObj = {
+                                'title': $scope.adTitle,
+                                'type': $scope.adType,
+                                'from': from.getDate() + '/' + (from.getMonth() + 1) + '/' + from.getFullYear(),
+                                'to': to.getDate() + '/' + (to.getMonth() + 1) + '/' + to.getFullYear(),
+                                'enabled': $scope.adEnabled == 'yes'
+                                    ? true
+                                    : false,
+                                'url': fileLoc
+                            }
+
+                            $('#createAdModalSubmitBtn').val('Add');
+                            $('#createAdModalSubmitBtn').removeAttr("disabled");
+                            $('#createAdModalDismissBtn').removeAttr("disabled");
+                            $('#createAdModalCloseBtn').removeAttr("disabled");
+                            $('#adTitleForm').removeAttr("disabled");
+                            $('#adTypeForm').removeAttr("disabled");
+                            $('#fromDateForm').removeAttr("disabled");
+                            $('#toDateForm').removeAttr("disabled");
+                            $('#adEnabledForm').removeAttr("disabled");
+                            $('#customFile').removeAttr("disabled");
+                            $('#createAdModal').modal('hide');
+
+                            $rootScope.isLoading = true;
+                            $rootScope.$digest();
+
+                            db
+                                .collection("ads")
+                                .add(adObj)
+                                .then((doc) => {
+                                    adObj['uid'] = doc.id;
+                                    data.push(adObj);
+                                    $('#manageAdsTable').bootstrapTable('load', data);
+                                    $rootScope.isLoading = false;
+                                    $rootScope.$digest();
+                                    toastr.success("Ad Created");
+                                    $scope.adTitle = "";
+                                    $scope.adType = "";
+                                    $scope.fromDate = "";
+                                    $scope.toDate = "";
+                                    $scope.adType = 'Image';
+                                    $scope.uploadProgress = 0;
+                                    $scope.adEnabled = 'yes';
+                                    $scope.fileName = "Choose File";
+                                })
+                                .catch((error) => {
+                                    $rootScope.isLoading = false;
+                                    $rootScope.$digest();
+                                    toastr.error("Error creating Ad");
+                                });
+                        })
+                        .catch((error) => {
+                            $('#createAdModalSubmitBtn').val('Add');
+                            $('#createAdModalSubmitBtn').removeAttr("disabled");
+                            $('#createAdModalDismissBtn').removeAttr("disabled");
+                            $('#createAdModalCloseBtn').removeAttr("disabled");
+                            $('#adTitleForm').removeAttr("disabled");
+                            $('#adTypeForm').removeAttr("disabled");
+                            $('#fromDateForm').removeAttr("disabled");
+                            $('#toDateForm').removeAttr("disabled");
+                            $('#adEnabledForm').removeAttr("disabled");
+                            $('#customFile').removeAttr("disabled");
+                            $scope.uploadProgress = 0;
+                            $('#adFormPB').css('width', 0 + '%');
+                            $('#pb').css('visibility', 'hidden');
+                            $scope.$digest();
+                            toastr.error("Unknown Server Error");
+                        });
+
+                });
+
+        }
+
+        $scope.fromDateChange = () => {
+            if ($scope.fromDate && $scope.toDate) {
+                if ($scope.fromDate > $scope.toDate) {
+                    alert("Invalid Dates. The from date cannot be after the to date");
+                    $scope.fromDate = "";
+                    $scope.toDate = "";
                 }
-            }, function (error) {
+            }
+        }
 
-                // A full list of error codes is available at
-                // https://firebase.google.com/docs/storage/web/handle-errors
-                switch (error.code) {
-                    case 'storage/unauthorized':
-                        $('#createAdModalSubmitBtn').val('Add');
-                        $('#createAdModalSubmitBtn').removeAttr("disabled");
-                        $('#createAdModalDismissBtn').removeAttr("disabled");
-                        $('#createAdModalCloseBtn').removeAttr("disabled");
-                        $('#adTitleForm').removeAttr("disabled");
-                        $('#adTypeForm').removeAttr("disabled");
-                        $('#fromDateForm').removeAttr("disabled");
-                        $('#toDateForm').removeAttr("disabled");
-                        $('#adEnabledForm').removeAttr("disabled");
-                        $('#customFile').removeAttr("disabled");
-                        $scope.uploadProgress = 0;
-                        $('#adFormPB').css('width', 0 + '%');
-                        $('#pb').css('visibility', 'hidden');
-                        $scope.$digest();
-                        toastr.error("Unknown Server Error");
-                        break;
-
-                    case 'storage/canceled':
-                        $('#createAdModalSubmitBtn').val('Add');
-                        $('#createAdModalSubmitBtn').removeAttr("disabled");
-                        $('#createAdModalDismissBtn').removeAttr("disabled");
-                        $('#createAdModalCloseBtn').removeAttr("disabled");
-                        $('#adTitleForm').removeAttr("disabled");
-                        $('#adTypeForm').removeAttr("disabled");
-                        $('#fromDateForm').removeAttr("disabled");
-                        $('#toDateForm').removeAttr("disabled");
-                        $('#adEnabledForm').removeAttr("disabled");
-                        $('#customFile').removeAttr("disabled");
-                        $scope.uploadProgress = 0;
-                        $('#adFormPB').css('width', 0 + '%');
-                        $('#pb').css('visibility', 'hidden');
-                        $scope.$digest();
-                        toastr.error("Unknown Server Error");
-                        break;
-
-                    case 'storage/unknown':
-                        $('#createAdModalSubmitBtn').val('Add');
-                        $('#createAdModalSubmitBtn').removeAttr("disabled");
-                        $('#createAdModalDismissBtn').removeAttr("disabled");
-                        $('#createAdModalCloseBtn').removeAttr("disabled");
-                        $('#adTitleForm').removeAttr("disabled");
-                        $('#adTypeForm').removeAttr("disabled");
-                        $('#fromDateForm').removeAttr("disabled");
-                        $('#toDateForm').removeAttr("disabled");
-                        $('#adEnabledForm').removeAttr("disabled");
-                        $('#customFile').removeAttr("disabled");
-                        $scope.uploadProgress = 0;
-                        $('#adFormPB').css('width', 0 + '%');
-                        $('#pb').css('visibility', 'hidden');
-                        $scope.$digest();
-                        toastr.error("Unknown Server Error");
-                        break;
+        $scope.toDateChange = () => {
+            if ($scope.fromDate && $scope.toDate) {
+                if ($scope.fromDate > $scope.toDate) {
+                    alert("Invalid Dates. The from date cannot be after the to date");
+                    $scope.fromDate = "";
+                    $scope.toDate = "";
                 }
-            }, function () {
-                // Upload completed successfully, now we can get the download URL
-                var fileLoc;
-                uploadTask
-                    .snapshot
-                    .ref
-                    .getDownloadURL()
-                    .then(function (downloadURL) {
-                        fileLoc = downloadURL;
-                        var adObj = {
-                            'title': $scope.adTitle,
-                            'type': $scope.adType,
-                            'from': $scope.fromDate,
-                            'to': $scope.toDate,
-                            'enabled': $scope.adEnabled == 'yes'
-                                ? true
-                                : false,
-                            'url': fileLoc
-                        }
-
-                        $('#createAdModalSubmitBtn').val('Add');
-                        $('#createAdModalSubmitBtn').removeAttr("disabled");
-                        $('#createAdModalDismissBtn').removeAttr("disabled");
-                        $('#createAdModalCloseBtn').removeAttr("disabled");
-                        $('#adTitleForm').removeAttr("disabled");
-                        $('#adTypeForm').removeAttr("disabled");
-                        $('#fromDateForm').removeAttr("disabled");
-                        $('#toDateForm').removeAttr("disabled");
-                        $('#adEnabledForm').removeAttr("disabled");
-                        $('#customFile').removeAttr("disabled");
-                        $('#createAdModal').modal('hide');
-
-                        $rootScope.isLoading = true;
-                        $rootScope.$digest();
-
-                        db
-                            .collection("ads")
-                            .add(adObj)
-                            .then((doc) => {
-                                adObj['uid'] = doc.id;
-                                data.push(adObj);
-                                $('#manageAdsTable').bootstrapTable('load', data);
-                                $rootScope.isLoading = false;
-                                $rootScope.$digest();
-                                toastr.success("Ad Created");
-                                $scope.adTitle = "";
-                                $scope.adType = "";
-                                $scope.fromDate = "";
-                                $scope.toDate = "";
-                                $scope.adType = 'imageAd';
-                                $scope.uploadProgress = 0;
-                                $scope.adEnabled = 'yes';
-                                $scope.fileName = "Choose File";
-                            })
-                            .catch((error) => {
-                                $rootScope.isLoading = false;
-                                $rootScope.$digest();
-                                toastr.error("Error creating Ad");
-                            });
-                    })
-                    .catch((error) => {
-                        $('#createAdModalSubmitBtn').val('Add');
-                        $('#createAdModalSubmitBtn').removeAttr("disabled");
-                        $('#createAdModalDismissBtn').removeAttr("disabled");
-                        $('#createAdModalCloseBtn').removeAttr("disabled");
-                        $('#adTitleForm').removeAttr("disabled");
-                        $('#adTypeForm').removeAttr("disabled");
-                        $('#fromDateForm').removeAttr("disabled");
-                        $('#toDateForm').removeAttr("disabled");
-                        $('#adEnabledForm').removeAttr("disabled");
-                        $('#customFile').removeAttr("disabled");
-                        $scope.uploadProgress = 0;
-                        $('#adFormPB').css('width', 0 + '%');
-                        $('#pb').css('visibility', 'hidden');
-                        $scope.$digest();
-                        toastr.error("Unknown Server Error");
-                    });
-
-            });
-
+            }
         }
 
         $scope.manageAd = (index) => {
@@ -274,5 +296,25 @@ angular
 
         formatManageButton = (value, row, index, field) => {
             return '<button onclick="angular.element(this).scope().manageAd(' + index + ')" type="button" class="btn btn-primary">Manage</button>'
+        }
+
+        formatAdStatus = (value, row, index, field) => {
+            var fromParts = data[index].from.split('/');
+            var fromDate = new Date(fromParts[2], fromParts[1] - 1, fromParts[0]);
+            var toParts = data[index].to.split('/');
+            var toDate = new Date(toParts[2], toParts[1] - 1, toParts[0]);
+            var current = Date.now();
+            if (data[index].enabled) {
+                if (current >= fromDate && toDate >= current) {
+                    return '<span style="color: green; font-weight: bold;">Active</span>';
+                }
+                else {
+                    return '<span style="color: red; font-weight: bold;">Inactive</span>';
+                }
+            }
+            else {
+                return '<span style="color: red; font-weight: bold;">Disabled</span>';
+            }
+            return 'fi eh';
         }
     });

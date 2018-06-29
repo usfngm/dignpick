@@ -8,8 +8,7 @@
                 <th data-field="type">Type</th>
                 <th data-field="from">From</th>
                 <th data-field="to">To</th>
-                <th data-field="status">Status</th>
-                <th data-field="enabled">Enabled</th>
+                <th data-formatter="formatAdStatus">Status</th>
                 <th data-formatter="formatManageButton">Manage</th>
             </tr>
         </thead>
@@ -35,15 +34,15 @@
                         <br>
                         <label>Type</label>
                         <select id="adTypeForm" class="form-control" ng-model="adType">
-                            <option value="imageAd">Image Ad</option>
-                            <option value="videoAd">Video Ad</option>
+                            <option value="Image">Image Ad</option>
+                            <option value="Video">Video Ad</option>
                         </select>
                         <br>
                         <label>From</label>
-                        <input id="fromDateForm" class='form-control' type='date' ng-model='fromDate' required/>
+                        <input ng-change="fromDateChange()" id="fromDateForm" class='form-control' type='date' ng-model='fromDate' required/>
                         <br>
                         <label>To</label>
-                        <input id="toDateForm" class='form-control' type='date' ng-model='toDate' required/>
+                        <input ng-change="toDateChange()" id="toDateForm" class='form-control' type='date' ng-model='toDate' required/>
                         <br>
                         <label>Enabled</label>
                         <select id="adEnabledForm" class="form-control" ng-model="adEnabled">
@@ -53,7 +52,7 @@
                         <br>
                         <label>{{adType == 'imageAd' ? 'Image Upload' : 'Video Upload'}}</label>
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" accept="image/*, video/*" id="customFile">
+                            <input type="file" class="custom-file-input" accept="image/*, video/*" id="customFile" required>
                             <label class="custom-file-label" for="customFile">{{fileName}}</label>
                         </div>
                         <br>
