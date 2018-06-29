@@ -95,8 +95,9 @@ angular
 
             //removeAttr Upload file and metadata to the object 'images/mountains.jpg'
             $('#pb').css('visibility', 'visible');
+            var uploadLoc = 'ads/' + file.name + Date.now();
             var uploadTask = storageRef
-                .child('ads/' + file.name + Date.now())
+                .child(uploadLoc)
                 .put(file);
 
             // Listen for state changes, errors, and completion of the upload.
@@ -193,7 +194,9 @@ angular
                                 'enabled': $scope.adEnabled == 'yes'
                                     ? true
                                     : false,
-                                'url': fileLoc
+                                'url': fileLoc,
+                                'uploadLoc': uploadLoc,
+                                'filter': {}
                             }
 
                             $('#createAdModalSubmitBtn').val('Add');
