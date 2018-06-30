@@ -1,6 +1,6 @@
 angular
     .module("digAPP")
-    .controller('adsCtrl', function ($scope, $rootScope, $state, $stateParams, $window) {
+    .controller('adsCtrl', function ($scope, $rootScope, $state, $http, $stateParams, $window) {
         $('#manageAdsContainer').hide();
         $scope.adType = 'Image';
         $scope.uploadProgress = 0;
@@ -15,42 +15,58 @@ angular
 
         var docRef = db.collection('ads');
         $rootScope.isLoading = true;
-        docRef
-            .get()
-            .then(function (querySnapshot) {
-                querySnapshot
-                    .forEach(function (doc) {
-                        // doc.data() is never undefined for query doc snapshots
-                        var temp = {
-                            'uid': doc
-                                .data()
-                                .uid,
-                            'title': doc
-                                .data()
-                                .title,
-                            'type': doc
-                                .data()
-                                .type,
-                            'from': doc
-                                .data()
-                                .from,
-                            'to': doc
-                                .data()
-                                .to,
-                            'enabled': doc
-                                .data()
-                                .enabled,
-                            'url': doc
-                                .data()
-                                .url
-                        };
-                        data.push(temp);
-                    });
-                $('#manageAdsTable').bootstrapTable({ data: data });
-                $rootScope.isLoading = false;
-                $rootScope.$digest();
-                $('#manageAdsContainer').show();
-            });
+
+        $http({
+            method: "POST",
+            url: "https://us-central1-dignpick.cloudfunctions.net/api/getAllAds"
+        }).then((response) => {
+            console.log('REPONSE FROM WEB');
+            console.log(response.data);
+            data = response.data.results;
+            $('#manageAdsTable').bootstrapTable({ data: data });
+            $rootScope.isLoading = false;
+            $('#manageAdsContainer').show();
+        }).catch((error) => {
+            console.log("ERROR FROM WEB");
+            console.log(error);
+        })
+
+        // docRef
+        //     .get()
+        //     .then(function (querySnapshot) {
+        //         querySnapshot
+        //             .forEach(function (doc) {
+        //                 // doc.data() is never undefined for query doc snapshots
+        //                 var temp = {
+        //                     'uid': doc
+        //                         .data()
+        //                         .uid,
+        //                     'title': doc
+        //                         .data()
+        //                         .title,
+        //                     'type': doc
+        //                         .data()
+        //                         .type,
+        //                     'from': doc
+        //                         .data()
+        //                         .from,
+        //                     'to': doc
+        //                         .data()
+        //                         .to,
+        //                     'enabled': doc
+        //                         .data()
+        //                         .enabled,
+        //                     'url': doc
+        //                         .data()
+        //                         .url
+        //                 };
+        //                 data.push(temp);
+        //             });
+        //         $('#manageAdsTable').bootstrapTable({ data: data });
+        //         $rootScope.isLoading = false;
+        //         $rootScope.$digest();
+        //         $('#manageAdsContainer').show();
+        //     });
 
         $('#customFile').change(function (ev) {
             file = document
@@ -214,30 +230,56 @@ angular
                             $rootScope.isLoading = true;
                             $rootScope.$digest();
 
-                            db
-                                .collection("ads")
-                                .add(adObj)
-                                .then((doc) => {
-                                    adObj['uid'] = doc.id;
-                                    data.push(adObj);
-                                    $('#manageAdsTable').bootstrapTable('load', data);
-                                    $rootScope.isLoading = false;
-                                    $rootScope.$digest();
-                                    toastr.success("Ad Created");
-                                    $scope.adTitle = "";
-                                    $scope.adType = "";
-                                    $scope.fromDate = "";
-                                    $scope.toDate = "";
-                                    $scope.adType = 'Image';
-                                    $scope.uploadProgress = 0;
-                                    $scope.adEnabled = 'yes';
-                                    $scope.fileName = "Choose File";
-                                })
-                                .catch((error) => {
-                                    $rootScope.isLoading = false;
-                                    $rootScope.$digest();
-                                    toastr.error("Error creating Ad");
-                                });
+                            $http({
+                                method: "POST",
+                                url: "https://us-central1-dignpick.cloudfunctions.net/api/newAd",
+                                data: {
+                                    'ad': adObj
+                                }
+                            }).then((response) => {
+                                var resultAd = response.data.result;
+                                data.push(resultAd);
+                                $('#manageAdsTable').bootstrapTable('load', data);
+                                $rootScope.isLoading = false;
+                                toastr.success("Ad Created");
+                                $scope.adTitle = "";
+                                $scope.adType = "";
+                                $scope.fromDate = "";
+                                $scope.toDate = "";
+                                $scope.adType = 'Image';
+                                $scope.uploadProgress = 0;
+                                $scope.adEnabled = 'yes';
+                                $scope.fileName = "Choose File";
+                            })
+                            .catch((error) => {
+                                $rootScope.isLoading = false;
+                                toastr.error("Error creating Ad");
+                            });
+
+                            // db
+                            //     .collection("ads")
+                            //     .add(adObj)
+                            //     .then((doc) => {
+                            //         adObj['uid'] = doc.id;
+                            //         data.push(adObj);
+                            //         $('#manageAdsTable').bootstrapTable('load', data);
+                            //         $rootScope.isLoading = false;
+                            //         $rootScope.$digest();
+                            //         toastr.success("Ad Created");
+                            //         $scope.adTitle = "";
+                            //         $scope.adType = "";
+                            //         $scope.fromDate = "";
+                            //         $scope.toDate = "";
+                            //         $scope.adType = 'Image';
+                            //         $scope.uploadProgress = 0;
+                            //         $scope.adEnabled = 'yes';
+                            //         $scope.fileName = "Choose File";
+                            //     })
+                            //     .catch((error) => {
+                            //         $rootScope.isLoading = false;
+                            //         $rootScope.$digest();
+                            //         toastr.error("Error creating Ad");
+                            //     });
                         })
                         .catch((error) => {
                             $('#createAdModalSubmitBtn').val('Add');
@@ -302,13 +344,8 @@ angular
         }
 
         formatAdStatus = (value, row, index, field) => {
-            var fromParts = data[index].from.split('/');
-            var fromDate = new Date(fromParts[2], fromParts[1] - 1, fromParts[0]);
-            var toParts = data[index].to.split('/');
-            var toDate = new Date(toParts[2], toParts[1] - 1, toParts[0]);
-            var current = Date.now();
             if (data[index].enabled) {
-                if (current >= fromDate && toDate >= current) {
+                if (data[index].status == 'Active') {
                     return '<span style="color: green; font-weight: bold;">Active</span>';
                 }
                 else {
@@ -318,6 +355,5 @@ angular
             else {
                 return '<span style="color: red; font-weight: bold;">Disabled</span>';
             }
-            return 'fi eh';
         }
     });

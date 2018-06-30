@@ -50,11 +50,15 @@
                             <option value="no">No</option>
                         </select>
                         <br>
-                        <label>{{adType == 'imageAd' ? 'Image Upload' : 'Video Upload'}}</label>
+                        <label>{{adType == 'Image' ? 'Image Upload' : 'Video Upload'}}</label>
                         <div class="custom-file">
                             <input type="file" class="custom-file-input" accept="image/*, video/*" id="customFile" required>
                             <label class="custom-file-label" for="customFile">{{fileName}}</label>
                         </div>
+                        <br>
+                        <br>
+                        <h5>Filters</h5>
+                        <label>Age Filter</label>
                         <br>
                         <div id="pb" class="progress position-relative">
                             <div id="adFormPB" class="progress-bar progress-bar-animated progress-bar-striped active" role="progressbar" aria-valuenow="60"
