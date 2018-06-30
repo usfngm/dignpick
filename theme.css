@@ -96,3 +96,11 @@ body, html {
 .modal-content {
     background-color: #f2f2f2;
 }
+
+.ageFilterContainer {
+    display: flex;
+}
+
+#createAdForm label {
+    font-weight: 600;
+}

@@ -13,7 +13,6 @@ angular
             .storage()
             .ref();
 
-        var docRef = db.collection('ads');
         $rootScope.isLoading = true;
 
         $http({
@@ -31,42 +30,15 @@ angular
             console.log(error);
         })
 
-        // docRef
-        //     .get()
-        //     .then(function (querySnapshot) {
-        //         querySnapshot
-        //             .forEach(function (doc) {
-        //                 // doc.data() is never undefined for query doc snapshots
-        //                 var temp = {
-        //                     'uid': doc
-        //                         .data()
-        //                         .uid,
-        //                     'title': doc
-        //                         .data()
-        //                         .title,
-        //                     'type': doc
-        //                         .data()
-        //                         .type,
-        //                     'from': doc
-        //                         .data()
-        //                         .from,
-        //                     'to': doc
-        //                         .data()
-        //                         .to,
-        //                     'enabled': doc
-        //                         .data()
-        //                         .enabled,
-        //                     'url': doc
-        //                         .data()
-        //                         .url
-        //                 };
-        //                 data.push(temp);
-        //             });
-        //         $('#manageAdsTable').bootstrapTable({ data: data });
-        //         $rootScope.isLoading = false;
-        //         $rootScope.$digest();
-        //         $('#manageAdsContainer').show();
-        //     });
+        db.collection('locations')
+            .get()
+            .then(function (querySnapshot) {
+                querySnapshot
+                    .forEach(function (doc) {
+                        // doc.data() is never undefined for query doc snapshots
+                        console.log(doc.data());   
+                    });
+            });
 
         $('#customFile').change(function (ev) {
             file = document

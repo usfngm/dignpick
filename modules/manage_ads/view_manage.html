@@ -27,7 +27,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form ng-submit="createAdSubmit()">
+                <form id="createAdForm" ng-submit="createAdSubmit()">
                     <div class="modal-body">
                         <label>Title</label>
                         <input id="adTitleForm" class='form-control' type='text' placeholder="Ad Title" ng-model='adTitle' required/>
@@ -56,9 +56,42 @@
                             <label class="custom-file-label" for="customFile">{{fileName}}</label>
                         </div>
                         <br>
-                        <br>
+                        <hr>
                         <h5>Filters</h5>
-                        <label>Age Filter</label>
+                        <br>
+                        <label>Age Filter
+                            <span style="font-style: italic; color: gray;">(Leave Blank to Target all Ages)</span>
+                        </label>
+                        <div class="ageFilterContainer">
+                            <div style="flex: 1;">
+                                From Age
+                                <input id="adTitleForm" class='form-control' style="width: 75%;" type='number' placeholder="From Age" ng-model='fromAgeFilter'
+                                    required/>
+                            </div>
+                            <div style="flex: 1;">
+                                To Age
+                                <input id="adTitleForm" class='form-control' style="width: 75%;" type='number' placeholder="To Age" ng-model='toAgeFilter'
+                                    required/>
+                            </div>
+                        </div>
+                        <br>
+                        <label>Gender Filter
+                            <span style="font-style: italic; color: gray;">(Leave Blank to Target all Ages)</span>
+                        </label>
+                        <br>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckbox1" ng-model="maleGenderFilter">
+                            <label style="font-weight: 400;" class="form-check-label" for="inlineCheckbox1">Males</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckbox2" ng-model="femaleGenderFilter">
+                            <label style="font-weight: 400;" class="form-check-label" for="inlineCheckbox2">Females</label>
+                        </div>
+                        <br>
+                        <br>
+                        <label>Location Filter
+                            <span style="font-style: italic; color: gray;">(Leave Blank to Target all Ages)</span>
+                        </label>
                         <br>
                         <div id="pb" class="progress position-relative">
                             <div id="adFormPB" class="progress-bar progress-bar-animated progress-bar-striped active" role="progressbar" aria-valuenow="60"
