@@ -9,7 +9,7 @@ admin.initializeApp(functions.config().firebase);
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors({origin: true})); // << for what you just defined
+app.use(cors({ origin: true })); // << for what you just defined
 
 app.post("/searchPlaces", (request, _response) => {
     if (request.body.query && request.body.token) {
@@ -43,7 +43,7 @@ app.post("/searchPlaces", (request, _response) => {
         console.log(request.body);
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -206,7 +206,7 @@ const freeArrayOfPlace = (a, place) => {
     }
 }
 
-const getRecommendationsRecursive2 = (budget, dishes, results, cb, error) => {}
+const getRecommendationsRecursive2 = (budget, dishes, results, cb, error) => { }
 
 const getDrinkForDish3 = (dish, drinks, budget) => {
     var drinkBudget = budget - dish.price;
@@ -221,9 +221,9 @@ const getDrinkForDish3 = (dish, drinks, budget) => {
 
 const placeExists = (arr, place) => {
     for (var i = 0; i < arr.length; i++) {
-        if (arr[i].place == place) 
+        if (arr[i].place == place)
             return i;
-        }
+    }
     return -1;
 }
 
@@ -249,9 +249,9 @@ const insertResult = (arr, result) => {
         arr[placeExistsIndex]
             .results
             .push(localResult);
-        if (arr[placeExistsIndex].results.length == 5) 
+        if (arr[placeExistsIndex].results.length == 5)
             return false;
-        }
+    }
     return true;
 }
 
@@ -345,7 +345,7 @@ const getPlacesInfo = (results, cb, i = 0, location = null, tags) => {
                     if (!currentTags[key] && tags[key]) {
                         results.splice(j, 1);
                         break;
-                    } else {}
+                    } else { }
                 }
             }
         }
@@ -356,7 +356,7 @@ const getPlacesInfo = (results, cb, i = 0, location = null, tags) => {
             results[i].place = place;
             results[i].place.id = placeCode;
             getPlacesInfo(results, cb, ++i, location, tags);
-        }, (error) => {}, location);
+        }, (error) => { }, location);
     }
 }
 
@@ -364,7 +364,7 @@ const getRecommendations = (budget, cb, error, location = null, tags) => {
     if (tags) {
         console.log("1) I HAVE TAGS");
         console.log(tags);
-    } else {}
+    } else { }
     // Get all dishes that fits the budget
     var dishes = [];
     var results = [];
@@ -392,7 +392,7 @@ app.post("/budgetSearch", (request, response) => {
     if (request.method != "POST") {
         response
             .status(400)
-            .send({"Error": "Unsupported HTTP Request"});
+            .send({ "Error": "Unsupported HTTP Request" });
         return;
     }
     if (request.body.budget && request.body.people && request.body.location && request.body.tags) {
@@ -427,7 +427,7 @@ app.post("/budgetSearch", (request, response) => {
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -463,22 +463,22 @@ app.post("/login", (request, response) => {
                     };
                     response
                         .status(200)
-                        .send({'user': user});
+                        .send({ 'user': user });
                 } else {
                     response
                         .status(400)
-                        .send({'user': null});
+                        .send({ 'user': null });
                 }
             })
             .catch(function (error) {
                 response
                     .status(400)
-                    .send({'user': null, 'error': error});
+                    .send({ 'user': null, 'error': error });
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -493,17 +493,17 @@ app.post("/register", (request, response) => {
             .then(function () {
                 response
                     .status(200)
-                    .send({'status': 'OK'})
+                    .send({ 'status': 'OK' })
             })
             .catch(function (error) {
                 response
                     .status(200)
-                    .send({'error': error})
+                    .send({ 'error': error })
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -522,23 +522,23 @@ app.post("/deleteUser", (request, response) => {
                     .then(function () {
                         response
                             .status(200)
-                            .send({'status': 'OK'});
+                            .send({ 'status': 'OK' });
                     })
                     .catch(function (error) {
                         response
                             .status(400)
-                            .send({'Error': error});
+                            .send({ 'Error': error });
                     });
             })
             .catch(function (error) {
                 response
                     .status(400)
-                    .send({"Error": error});
+                    .send({ "Error": error });
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -547,7 +547,7 @@ app.post("/registerNewUser", (request, response) => {
         var user = request.body.user;
         admin
             .auth()
-            .createUser({email: user.email, password: user.password, displayName: user.name})
+            .createUser({ email: user.email, password: user.password, displayName: user.name })
             .then(function (userRecord) {
                 var db = admin.firestore();
                 delete user.password;
@@ -560,24 +560,24 @@ app.post("/registerNewUser", (request, response) => {
                     .then(function () {
                         response
                             .status(200)
-                            .send({'status': 'OK', 'user': user});
+                            .send({ 'status': 'OK', 'user': user });
                     })
                     .catch(function (error) {
                         response
                             .status(200)
-                            .send({'error': error});
+                            .send({ 'error': error });
                     });
             })
             .catch(function (error) {
                 console.log("Error updating user:", error);
                 response
                     .status(400)
-                    .send({'Error': error});
+                    .send({ 'Error': error });
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -613,72 +613,72 @@ app.post("/newAd", (request, response) => {
                 ad['uid'] = doc.id;
                 response
                     .status(200)
-                    .send({'result': ad});
+                    .send({ 'result': ad });
             })
             .catch((error) => {
                 response
                     .status(400)
-                    .send({'error': error});
+                    .send({ 'error': error });
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
+
+const getAllLocationsHelper = async (cb, e) => {
+    var results = [];
+    try {
+        var locs = await db
+            .collection('locations')
+            .get();
+        locs.forEach(doc => {
+            var tempLoc = doc.data();
+            tempLoc['uid'] = doc.id;
+            tempLoc['states'] = [];
+            results.push(tempLoc);
+        });
+        for (var i = 0; i < results.length; i++) {
+            var states = await db.collection('locations')
+                .doc(results[i].uid).collection('states')
+                .get();
+            states.forEach(state => {
+                var tempState = state.data();
+                tempState['uid'] = state.id;
+                tempState['areas'] = [];
+                results[i].states.push(tempState);
+            });
+            for (var j = 0; j < states.size; j++) {
+                var areas = await db.collection('locations')
+                    .doc(results[i].uid).collection('states')
+                    .doc(results[i].states[j].uid).collection('areas').get();
+                areas.forEach(area => {
+                    var tempArea = area.data();
+                    tempArea['uid'] = area.id;
+                    results[i].states[j].areas.push(tempArea);
+                });
+            }
+        }
+        cb(results);
+    }
+    catch (err) {
+        e(err);
+    }
+}
 
 app.post("/getAllLocations", (request, response) => {
     var db = admin.firestore;
     var results = [];
-    db
-        .collection('locations')
-        .get()
-        .then(function (querySnapshot) {
-            var i = 0;
-            querySnapshot
-                .forEach(function (loc) {
-                    // doc.data() is never undefined for query doc snapshots
-                    var tempLoc = loc;
-                    tempLoc['uid'] = loc.id;
-                    tempLoc['states'] = [];
-                    results[i] = tempLoc;
-                    db
-                        .collection('locations')
-                        .doc(loc.id)
-                        .collection('states')
-                        .get()
-                        .then((statesResults) => {
-                            var j = 0;
-                            statesResults.forEach((state) => {
-                                var tempState = state;
-                                tempState['uid'] = state.id;
-                                tempState['areas'] = [];
-                                results[i].states[j] = tempState;
-                                // START
-                                db
-                                .collection('locations')
-                                .doc(loc.id)
-                                .collection('states')
-                                .doc(state.id)
-                                .collection('areas')
-                                .get()
-                                .then((areasResults) => {
-                                    var k = 0;
-                                    areasResults.forEach((area) => {
-                                        var tempArea = area;
-                                        tempArea['uid'] = area.id;
-                                        results[i].states[j].areas[k] = tempArea;
-                                        k++;
-                                    });
-                                });
-                                // END
-                                j++;
-                            });
-                        });
-                    console.log(loc.data());
-                    i++;
-                });
-        });
+    getAllLocationsHelper((results) => {
+        response
+            .status(200)
+            .send(results);
+    }, (error) => {
+        response
+            .status(400)
+            .send({ 'error': error });
+    });
 });
 
 app.post("/getAllAds", (request, response) => {
@@ -718,13 +718,13 @@ app.post("/getAllAds", (request, response) => {
             }
             response
                 .status(200)
-                .send({'results': results});
+                .send({ 'results': results });
         })
         .catch((error) => {
             console.log('error is ' + error);
             response
                 .status(400)
-                .send({'error': error});
+                .send({ 'error': error });
         });
 });
 
@@ -741,17 +741,17 @@ app.post("/addFavPlace", (request, response) => {
             .then(function () {
                 response
                     .status(200)
-                    .send({'status': 'OK'})
+                    .send({ 'status': 'OK' })
             })
             .catch(function (error) {
                 response
                     .status(200)
-                    .send({'error': error})
+                    .send({ 'error': error })
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
@@ -768,17 +768,17 @@ app.post("/removeFavPlace", (request, response) => {
             .then(function () {
                 response
                     .status(200)
-                    .send({'status': 'OK'})
+                    .send({ 'status': 'OK' })
             })
             .catch(function (error) {
                 response
                     .status(200)
-                    .send({'error': error})
+                    .send({ 'error': error })
             });
     } else {
         response
             .status(400)
-            .send({"Error": "Incomplete Parameters"});
+            .send({ "Error": "Incomplete Parameters" });
     }
 });
 
