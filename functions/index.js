@@ -9,38 +9,43 @@ admin.initializeApp(functions.config().firebase);
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors({ origin: true })); // << for what you just defined
+app.use(cors({origin: true})); // << for what you just defined
 
 app.post("/searchPlaces", (request, _response) => {
     if (request.body.query && request.body.token) {
         _request('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + request.body.query + '&key=AIzaSyCj7_x58Uz5YoElBPmI3lw6GaAzTTCBoOw&region=eg&pagetoken=' + request.body.token, function (error, response, body) {
             if (error) {
-                _response.status(400).send(error);
-            }
-            else {
-                _response.status(200).send(response);
+                _response
+                    .status(400)
+                    .send(error);
+            } else {
+                _response
+                    .status(200)
+                    .send(response);
             }
         });
-    }
-    else if (request.body.query) {
+    } else if (request.body.query) {
         _request('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + request.body.query + '&key=AIzaSyCj7_x58Uz5YoElBPmI3lw6GaAzTTCBoOw&region=eg', function (error, response, body) {
             if (error) {
-                _response.status(400).send(error);
-            }
-            else {
+                _response
+                    .status(400)
+                    .send(error);
+            } else {
                 console.log('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + request.body.query + '&key=AIzaSyDstXJe23Gf3zZp3XxlkfPz0FNatD_Y0eE&region=eg');
                 console.log('returned ' + response);
-                _response.status(200).send(response);
+                _response
+                    .status(200)
+                    .send(response);
             }
         });
-    }
-    else {
+    } else {
         console.log("INCOMLENTE PARAMETERS");
         console.log(request.body);
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
-
 
 /**
  * Shuffles array in place. ES6 version
@@ -56,13 +61,9 @@ function shuffle(a) {
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     var R = 6371; // Radius of the earth in km
-    var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+    var dLat = deg2rad(lat2 - lat1); // deg2rad below
     var dLon = deg2rad(lon2 - lon1);
-    var a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2)
-        ;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     var d = R * c; // Distance in km
     return d;
@@ -72,17 +73,21 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180)
 }
 
-
 const getDishes = (budget, cb, error) => {
     var places = [];
     var db = admin.firestore();
-    db.collection("dishes").where("price", "<", budget)
+    db
+        .collection("dishes")
+        .where("price", "<", budget)
         .get()
         .then(function (dish_results) {
             var lowest_price = Number.MAX_SAFE_INTEGER;
             for (var i = 0; i < dish_results.size; i++) {
                 if (lowest_price > dish_results.docs[i].data().price) {
-                    lowest_price = dish_results.docs[i].data().price;
+                    lowest_price = dish_results
+                        .docs[i]
+                        .data()
+                        .price;
                 }
                 places.push(dish_results.docs[i].data());
             }
@@ -98,9 +103,11 @@ const getDishes = (budget, cb, error) => {
 const getDrinks = (budget, cb, err) => {
     var db = admin.firestore();
     var drinks = [];
-    db.collection("drinks")
+    db
+        .collection("drinks")
         .where("price", "<=", budget)
-        .get().then(function (drinks_results) {
+        .get()
+        .then(function (drinks_results) {
             for (var i = 0; i < drinks_results.size; i++) {
                 drinks.push(drinks_results.docs[i].data());
             }
@@ -117,10 +124,12 @@ const getDrinks = (budget, cb, err) => {
 const getDrinkForDish = (dish, budget, cb, error) => {
     var db = admin.firestore();
     var drinks = [];
-    db.collection("drinks")
+    db
+        .collection("drinks")
         .where("price", "<=", budget)
         .where("place", "==", dish.place)
-        .get().then(function (drinks_results) {
+        .get()
+        .then(function (drinks_results) {
             for (var i = 0; i < drinks_results.size; i++) {
                 drinks.push(drinks_results.docs[i].data());
             }
@@ -135,47 +144,57 @@ const getDrinkForDish = (dish, budget, cb, error) => {
 
 const getPlace = (placeID, cb, error, location = null) => {
     var db = admin.firestore();
-    db.collection("places").doc(placeID).get().then(function (doc) {
-        if (location) {
-            var place = doc.data();
-            db.collection("branches").doc(placeID).get().then((branches) => {
-                try {
-                    var branches_arr = branches.data().branches;
+    db
+        .collection("places")
+        .doc(placeID)
+        .get()
+        .then(function (doc) {
+            if (location) {
+                var place = doc.data();
+                db
+                    .collection("branches")
+                    .doc(placeID)
+                    .get()
+                    .then((branches) => {
+                        try {
+                            var branches_arr = branches
+                                .data()
+                                .branches;
 
-                    var shortestDistance = Number.MAX_SAFE_INTEGER;
-                    var shortestDistanceIndex = -1;
-                    for (var i = 0; i < branches_arr.length; i++) {
-                        var branchLat = branches_arr[i].geometry.lat;
-                        var branchLng = branches_arr[i].geometry.lng;
-                        var currentDistance = getDistanceFromLatLonInKm(location.lat, location.lng, branchLat, branchLng);
-                        if (currentDistance < shortestDistance) {
-                            shortestDistance = currentDistance;
-                            shortestDistanceIndex = i;
+                            var shortestDistance = Number.MAX_SAFE_INTEGER;
+                            var shortestDistanceIndex = -1;
+                            for (var i = 0; i < branches_arr.length; i++) {
+                                var branchLat = branches_arr[i].geometry.lat;
+                                var branchLng = branches_arr[i].geometry.lng;
+                                var currentDistance = getDistanceFromLatLonInKm(location.lat, location.lng, branchLat, branchLng);
+                                if (currentDistance < shortestDistance) {
+                                    shortestDistance = currentDistance;
+                                    shortestDistanceIndex = i;
+                                }
+                            }
+                            if (branches_arr.length > 0) {
+                                place['shortestDistance'] = shortestDistance.toFixed(2);
+                                place['nearestBranch'] = branches_arr[shortestDistanceIndex];
+                                place['branches'] = branches_arr;
+                            }
+                            cb(place);
+                        } catch (err) {
+                            console.log("ERR IN GETTING BRANCH OF " + place.name);
+                            console.log(err);
+                            cb(place);
                         }
-                    }
-                    if (branches_arr.length > 0) {
-                        place['shortestDistance'] = shortestDistance.toFixed(2);
-                        place['nearestBranch'] = branches_arr[shortestDistanceIndex];
-                        place['branches'] = branches_arr;
-                    }
-                    cb(place);
-                }
-                catch (err) {
-                    console.log("ERR IN GETTING BRANCH OF " + place.name);
-                    console.log(err);
-                    cb(place);
-                }
-            }).catch((error) => {
-                console.log("ERROR IN QUERY");
-                console.log(error);
-            });
-        }
-        else {
-            cb(doc.data());
-        }
-    }).catch(function (error) {
-        error(error);
-    });
+                    })
+                    .catch((error) => {
+                        console.log("ERROR IN QUERY");
+                        console.log(error);
+                    });
+            } else {
+                cb(doc.data());
+            }
+        })
+        .catch(function (error) {
+            error(error);
+        });
 }
 
 const freeArrayOfPlace = (a, place) => {
@@ -187,9 +206,7 @@ const freeArrayOfPlace = (a, place) => {
     }
 }
 
-const getRecommendationsRecursive2 = (budget, dishes, results, cb, error) => {
-
-}
+const getRecommendationsRecursive2 = (budget, dishes, results, cb, error) => {}
 
 const getDrinkForDish3 = (dish, drinks, budget) => {
     var drinkBudget = budget - dish.price;
@@ -204,8 +221,9 @@ const getDrinkForDish3 = (dish, drinks, budget) => {
 
 const placeExists = (arr, place) => {
     for (var i = 0; i < arr.length; i++) {
-        if (arr[i].place == place) return i;
-    }
+        if (arr[i].place == place) 
+            return i;
+        }
     return -1;
 }
 
@@ -214,26 +232,26 @@ const insertResult = (arr, result) => {
     var placeExistsIndex = placeExists(arr, result.place);
     if (arr.length == 0 || placeExistsIndex == -1) {
         localResult.place = result.place;
-        localResult.results =
-            [
-                {
-                    "dish": result.dish,
-                    "drink": result.drink,
-                    "totalPrice": result.totalPrice
-                }
-            ];
-        arr.push(localResult);
-    }
-    else {
-        localResult =
+        localResult.results = [
             {
                 "dish": result.dish,
                 "drink": result.drink,
                 "totalPrice": result.totalPrice
-            };
-        arr[placeExistsIndex].results.push(localResult);
-        if (arr[placeExistsIndex].results.length == 5) return false;
-    }
+            }
+        ];
+        arr.push(localResult);
+    } else {
+        localResult = {
+            "dish": result.dish,
+            "drink": result.drink,
+            "totalPrice": result.totalPrice
+        };
+        arr[placeExistsIndex]
+            .results
+            .push(localResult);
+        if (arr[placeExistsIndex].results.length == 5) 
+            return false;
+        }
     return true;
 }
 
@@ -245,8 +263,7 @@ const getRecommendations3 = (dishes, drinks, budget) => {
         var currentDrink = getDrinkForDish3(currentDish, drinks, budget);
         if (!currentDrink) {
             dishes.splice(0, 1);
-        }
-        else {
+        } else {
             localResult.place = currentDish.place;
             localResult.drink = currentDrink;
             localResult.dish = currentDish;
@@ -264,8 +281,7 @@ const getRecommendationsRecursive = (budget, dishes, results, cb, error) => {
     if (dishes.length == 0) {
         cb();
         return;
-    }
-    else {
+    } else {
         var drinks = [];
         var localResult = {};
         var currentDish = dishes[0];
@@ -274,13 +290,11 @@ const getRecommendationsRecursive = (budget, dishes, results, cb, error) => {
         getDrinkForDish(currentDish, drinksBudget, (result) => {
             drinks = result;
 
-            // If no drinks found, discard the current dish
-            // and start all over
+            // If no drinks found, discard the current dish and start all over
             if (drinks.length == 0) {
                 dishes.splice(0, 1);
                 return getRecommendationsRecursive(budget, dishes, results, cb);
             }
-
 
             getPlace(currentDish.place, (result) => {
                 // Construct a local result object
@@ -331,24 +345,18 @@ const getPlacesInfo = (results, cb, i = 0, location = null, tags) => {
                     if (!currentTags[key] && tags[key]) {
                         results.splice(j, 1);
                         break;
-                    }
-                    else {
-
-                    }
+                    } else {}
                 }
             }
         }
         cb(results);
-    }
-    else {
+    } else {
         getPlace(results[i].place, (place) => {
             var placeCode = results[i].place;
             results[i].place = place;
             results[i].place.id = placeCode;
             getPlacesInfo(results, cb, ++i, location, tags);
-        }, (error) => {
-
-        }, location);
+        }, (error) => {}, location);
     }
 }
 
@@ -356,10 +364,7 @@ const getRecommendations = (budget, cb, error, location = null, tags) => {
     if (tags) {
         console.log("1) I HAVE TAGS");
         console.log(tags);
-    }
-    else {
-
-    }
+    } else {}
     // Get all dishes that fits the budget
     var dishes = [];
     var results = [];
@@ -385,7 +390,9 @@ app.post("/budgetSearch", (request, response) => {
     console.log("REQEST BODY");
     console.log(request.body);
     if (request.method != "POST") {
-        response.status(400).send({ "Error": "Unsupported HTTP Request" });
+        response
+            .status(400)
+            .send({"Error": "Unsupported HTTP Request"});
         return;
     }
     if (request.body.budget && request.body.people && request.body.location && request.body.tags) {
@@ -395,24 +402,32 @@ app.post("/budgetSearch", (request, response) => {
         var location = request.body.location;
         var tags = request.body.tags;
         getRecommendations(budget, (results) => {
-            response.status(200).send(results);
+            response
+                .status(200)
+                .send(results);
         }, (error) => {
-            response.status(400).send(error);
+            response
+                .status(400)
+                .send(error);
         }, location, tags);
-    }
-    else if (request.body.budget && request.body.people && request.body.tags) {
+    } else if (request.body.budget && request.body.people && request.body.tags) {
         console.log("starting clean function");
         var budget = parseInt(request.body.budget);
         var people = parseInt(request.body.people);
         var tags = request.body.tags;
         getRecommendations(budget, (results) => {
-            response.status(200).send(results);
+            response
+                .status(200)
+                .send(results);
         }, (error) => {
-            response.status(400).send(error);
+            response
+                .status(400)
+                .send(error);
         }, null, tags);
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
@@ -421,28 +436,49 @@ app.post("/login", (request, response) => {
         console.log("starting clean function");
         var uid = request.body.uid;
         var db = admin.firestore();
-        db.collection("users").doc(uid).get()
+        db
+            .collection("users")
+            .doc(uid)
+            .get()
             .then(function (doc) {
                 if (doc.exists) {
                     console.log(doc.data());
                     const user = {
                         uid: uid,
-                        name: doc.data().name,
-                        email: doc.data().email,
-                        city: doc.data().city,
-                        mobile: doc.data().mobile,
-                        favPlaces: doc.data().favPlaces
+                        name: doc
+                            .data()
+                            .name,
+                        email: doc
+                            .data()
+                            .email,
+                        city: doc
+                            .data()
+                            .city,
+                        mobile: doc
+                            .data()
+                            .mobile,
+                        favPlaces: doc
+                            .data()
+                            .favPlaces
                     };
-                    response.status(200).send({ 'user': user });
+                    response
+                        .status(200)
+                        .send({'user': user});
                 } else {
-                    response.status(400).send({ 'user': null });
+                    response
+                        .status(400)
+                        .send({'user': null});
                 }
-            }).catch(function (error) {
-                response.status(400).send({ 'user': null, 'error': error });
+            })
+            .catch(function (error) {
+                response
+                    .status(400)
+                    .send({'user': null, 'error': error});
             });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
@@ -450,70 +486,98 @@ app.post("/register", (request, response) => {
     if (request.body.user) {
         var user = request.body.user;
         var db = admin.firestore();
-        db.collection("users").doc(user.uid).set(user)
+        db
+            .collection("users")
+            .doc(user.uid)
+            .set(user)
             .then(function () {
-                response.status(200).send({ 'status': 'OK' })
+                response
+                    .status(200)
+                    .send({'status': 'OK'})
             })
             .catch(function (error) {
-                response.status(200).send({ 'error': error })
+                response
+                    .status(200)
+                    .send({'error': error})
             });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
 app.post("/deleteUser", (request, response) => {
     if (request.body.uid) {
         var uid = request.body.uid;
-        admin.auth().deleteUser(uid)
+        admin
+            .auth()
+            .deleteUser(uid)
             .then(function () {
                 var db = admin.firestore();
-                db.collection("users").doc(uid).delete()
+                db
+                    .collection("users")
+                    .doc(uid)
+                    .delete()
                     .then(function () {
-                        response.status(200).send({ 'status': 'OK' });
+                        response
+                            .status(200)
+                            .send({'status': 'OK'});
                     })
                     .catch(function (error) {
-                        response.status(400).send({ 'Error': error });
+                        response
+                            .status(400)
+                            .send({'Error': error});
                     });
             })
             .catch(function (error) {
-                response.status(400).send({ "Error": error });
+                response
+                    .status(400)
+                    .send({"Error": error});
             });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
 app.post("/registerNewUser", (request, response) => {
     if (request.body.user) {
         var user = request.body.user;
-        admin.auth().createUser({
-            email: user.email,
-            password: user.password,
-            displayName: user.name
-        })
+        admin
+            .auth()
+            .createUser({email: user.email, password: user.password, displayName: user.name})
             .then(function (userRecord) {
                 var db = admin.firestore();
                 delete user.password;
                 user.favPlaces = {};
                 user.uid = userRecord.uid;
-                db.collection("users").doc(user.uid).set(user)
+                db
+                    .collection("users")
+                    .doc(user.uid)
+                    .set(user)
                     .then(function () {
-                        response.status(200).send({ 'status': 'OK', 'user': user });
+                        response
+                            .status(200)
+                            .send({'status': 'OK', 'user': user});
                     })
                     .catch(function (error) {
-                        response.status(200).send({ 'error': error });
+                        response
+                            .status(200)
+                            .send({'error': error});
                     });
             })
             .catch(function (error) {
                 console.log("Error updating user:", error);
-                response.status(400).send({ 'Error': error });
+                response
+                    .status(400)
+                    .send({'Error': error});
             });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
@@ -523,68 +587,145 @@ app.post("/newAd", (request, response) => {
         console.log('started getting all ads');
         var db = admin.firestore();
         var results = [];
-        var fromParts = ad.from.split('/');
+        var fromParts = ad
+            .from
+            .split('/');
         var fromDate = new Date(fromParts[2], fromParts[1] - 1, fromParts[0]);
-        var toParts = ad.to.split('/');
+        var toParts = ad
+            .to
+            .split('/');
         var toDate = new Date(toParts[2], toParts[1] - 1, toParts[0]);
         var current = Date.now();
 
         if (ad.enabled) {
             if (current >= fromDate && toDate >= current) {
                 ad['status'] = 'Active';
-            }
-            else {
+            } else {
                 ad['status'] = 'Inactive';
             }
-        }
-        else {
+        } else {
             ad['status'] = 'Disabled';
         }
-        db.collection('ads').add(ad).then((doc) => {
-            ad['uid'] = doc.id;
-            response.status(200).send({ 'result': ad });
-        }).catch((error) => {
-            response.status(400).send({ 'error': error });
+        db
+            .collection('ads')
+            .add(ad)
+            .then((doc) => {
+                ad['uid'] = doc.id;
+                response
+                    .status(200)
+                    .send({'result': ad});
+            })
+            .catch((error) => {
+                response
+                    .status(400)
+                    .send({'error': error});
+            });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
+    }
+});
+
+app.post("/getAllLocations", (request, response) => {
+    var db = admin.firestore;
+    var results = [];
+    db
+        .collection('locations')
+        .get()
+        .then(function (querySnapshot) {
+            var i = 0;
+            querySnapshot
+                .forEach(function (loc) {
+                    // doc.data() is never undefined for query doc snapshots
+                    var tempLoc = loc;
+                    tempLoc['uid'] = loc.id;
+                    tempLoc['states'] = [];
+                    results[i] = tempLoc;
+                    db
+                        .collection('locations')
+                        .doc(loc.id)
+                        .collection('states')
+                        .get()
+                        .then((statesResults) => {
+                            var j = 0;
+                            statesResults.forEach((state) => {
+                                var tempState = state;
+                                tempState['uid'] = state.id;
+                                tempState['areas'] = [];
+                                results[i].states[j] = tempState;
+                                // START
+                                db
+                                .collection('locations')
+                                .doc(loc.id)
+                                .collection('states')
+                                .doc(state.id)
+                                .collection('areas')
+                                .get()
+                                .then((areasResults) => {
+                                    var k = 0;
+                                    areasResults.forEach((area) => {
+                                        var tempArea = area;
+                                        tempArea['uid'] = area.id;
+                                        results[i].states[j].areas[k] = tempArea;
+                                        k++;
+                                    });
+                                });
+                                // END
+                                j++;
+                            });
+                        });
+                    console.log(loc.data());
+                    i++;
+                });
         });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
-    }
 });
 
 app.post("/getAllAds", (request, response) => {
     console.log('started getting all ads');
     var db = admin.firestore();
     var results = [];
-    db.collection('ads').get().then((adResults) => {
-        console.log('got ' + adResults.size + ' result');
-        for (var i = 0; i < adResults.size; i++) {
-            var temp = adResults.docs[i].data();
-            var fromParts = temp.from.split('/');
-            var fromDate = new Date(fromParts[2], fromParts[1] - 1, fromParts[0]);
-            var toParts = temp.to.split('/');
-            var toDate = new Date(toParts[2], toParts[1] - 1, toParts[0]);
-            var current = Date.now();
+    db
+        .collection('ads')
+        .get()
+        .then((adResults) => {
+            console.log('got ' + adResults.size + ' result');
+            for (var i = 0; i < adResults.size; i++) {
+                var temp = adResults
+                    .docs[i]
+                    .data();
+                var fromParts = temp
+                    .from
+                    .split('/');
+                var fromDate = new Date(fromParts[2], fromParts[1] - 1, fromParts[0]);
+                var toParts = temp
+                    .to
+                    .split('/');
+                var toDate = new Date(toParts[2], toParts[1] - 1, toParts[0]);
+                var current = Date.now();
 
-            if (temp.enabled) {
-                if (current >= fromDate && toDate >= current) {
-                    temp['status'] = 'Active';
+                if (temp.enabled) {
+                    if (current >= fromDate && toDate >= current) {
+                        temp['status'] = 'Active';
+                    } else {
+                        temp['status'] = 'Inactive';
+                    }
+                } else {
+                    temp['status'] = 'Disabled';
                 }
-                else {
-                    temp['status'] = 'Inactive';
-                }
+                temp['uid'] = adResults.docs[i].id;
+                results.push(temp);
             }
-            else {
-                temp['status'] = 'Disabled';
-            }
-            temp['uid'] = adResults.docs[i].id;
-            results.push(temp);
-        }
-        response.status(200).send({ 'results': results });
-    }).catch((error) => {
-        console.log('error is ' + error);
-        response.status(400).send({ 'error': error });
-    });
+            response
+                .status(200)
+                .send({'results': results});
+        })
+        .catch((error) => {
+            console.log('error is ' + error);
+            response
+                .status(400)
+                .send({'error': error});
+        });
 });
 
 app.post("/addFavPlace", (request, response) => {
@@ -593,16 +734,24 @@ app.post("/addFavPlace", (request, response) => {
         var placeID = request.body.place.id;
         user.favPlaces[placeID] = request.body.place;
         var db = admin.firestore();
-        db.collection("users").doc(user.uid).set(user)
+        db
+            .collection("users")
+            .doc(user.uid)
+            .set(user)
             .then(function () {
-                response.status(200).send({ 'status': 'OK' })
+                response
+                    .status(200)
+                    .send({'status': 'OK'})
             })
             .catch(function (error) {
-                response.status(200).send({ 'error': error })
+                response
+                    .status(200)
+                    .send({'error': error})
             });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
@@ -612,20 +761,30 @@ app.post("/removeFavPlace", (request, response) => {
         var placeID = request.body.placeID;
         delete user.favPlaces[placeID];
         var db = admin.firestore();
-        db.collection("users").doc(user.uid).set(user)
+        db
+            .collection("users")
+            .doc(user.uid)
+            .set(user)
             .then(function () {
-                response.status(200).send({ 'status': 'OK' })
+                response
+                    .status(200)
+                    .send({'status': 'OK'})
             })
             .catch(function (error) {
-                response.status(200).send({ 'error': error })
+                response
+                    .status(200)
+                    .send({'error': error})
             });
-    }
-    else {
-        response.status(400).send({ "Error": "Incomplete Parameters" });
+    } else {
+        response
+            .status(400)
+            .send({"Error": "Incomplete Parameters"});
     }
 });
 
-const api = functions.https.onRequest(app)
+const api = functions
+    .https
+    .onRequest(app)
 module.exports = {
     api
 }

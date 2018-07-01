@@ -15,29 +15,85 @@ angular
 
         $rootScope.isLoading = true;
 
-        $http({
-            method: "POST",
-            url: "https://us-central1-dignpick.cloudfunctions.net/api/getAllAds"
-        }).then((response) => {
+        $http({method: "POST", url: "https://us-central1-dignpick.cloudfunctions.net/api/getAllAds"}).then((response) => {
             console.log('REPONSE FROM WEB');
             console.log(response.data);
             data = response.data.results;
-            $('#manageAdsTable').bootstrapTable({ data: data });
+            $('#manageAdsTable').bootstrapTable({data: data});
             $rootScope.isLoading = false;
             $('#manageAdsContainer').show();
         }).catch((error) => {
             console.log("ERROR FROM WEB");
             console.log(error);
-        })
+        });
+        async function foo() {
+            var locs = await db
+                .collection('locations')
+                .get();
+            locs.forEach(doc => {
+                console.log(doc.id, '=>', doc.data().name);
+            });
+            console.log("end");
+        }
 
-        db.collection('locations')
+        foo();
+
+        db
+            .collection('locations')
             .get()
             .then(function (querySnapshot) {
-                querySnapshot
-                    .forEach(function (doc) {
-                        // doc.data() is never undefined for query doc snapshots
-                        console.log(doc.data());   
-                    });
+                var results = [];
+                var i = -1;
+                querySnapshot.forEach(function (loc) {
+                    i++;
+                    // doc.data() is never undefined for query doc snapshots
+                    var tempLoc = loc.data();
+                    tempLoc['uid'] = loc.id;
+                    tempLoc['states'] = [];
+                    results[i] = tempLoc;
+                    console.log(tempLoc);
+                    db
+                        .collection('locations')
+                        .doc(loc.id)
+                        .collection('states')
+                        .get()
+                        .then((statesResults) => {
+                            var j = -1;
+                            statesResults.forEach((state) => {
+                                j++;
+                                var tempState = state.data();
+                                tempState['uid'] = state.id;
+                                tempState['areas'] = [];
+                                console.log(i);
+                                console.log(results[i]);
+                                results[i].states[j] = tempState;
+                                console.log(tempState);
+                                // START
+                                db
+                                    .collection('locations')
+                                    .doc(loc.id)
+                                    .collection('states')
+                                    .doc(state.id)
+                                    .collection('areas')
+                                    .get()
+                                    .then((areasResults) => {
+                                        var k = -1;
+                                        areasResults.forEach((area) => {
+                                            k++;
+                                            var tempArea = area.data();
+                                            tempArea['uid'] = area.id;
+                                            results[i].states[j].areas[k] = tempArea;
+                                            console.log(results);
+
+                                        });
+                                    });
+                                // END
+
+                            });
+                        });
+                    console.log(loc.data());
+
+                });
             });
 
         $('#customFile').change(function (ev) {
@@ -90,188 +146,172 @@ angular
 
             // Listen for state changes, errors, and completion of the upload.
             uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-                function (snapshot) {
-                    // Get task progress, including the number of bytes uploaded and the total
-                    // number of bytes to be uploaded
-                    var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                    console.log('Upload is ' + progress + '% done');
-                    onProgress(progress);
-                    switch (snapshot.state) {
-                        case firebase.storage.TaskState.PAUSED: // or 'paused'
-                            console.log('Upload is paused');
-                            break;
-                        case firebase.storage.TaskState.RUNNING: // or 'running'
-                            console.log('Upload is running');
-                            break;
-                    }
-                }, function (error) {
+                    function (snapshot) {
+                // Get task progress, including the number of bytes uploaded and the total
+                // number of bytes to be uploaded
+                var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                console.log('Upload is ' + progress + '% done');
+                onProgress(progress);
+                switch (snapshot.state) {
+                    case firebase.storage.TaskState.PAUSED: // or 'paused'
+                        console.log('Upload is paused');
+                        break;
+                    case firebase.storage.TaskState.RUNNING: // or 'running'
+                        console.log('Upload is running');
+                        break;
+                }
+            }, function (error) {
 
-                    // A full list of error codes is available at
-                    // https://firebase.google.com/docs/storage/web/handle-errors
-                    switch (error.code) {
-                        case 'storage/unauthorized':
-                            $('#createAdModalSubmitBtn').val('Add');
-                            $('#createAdModalSubmitBtn').removeAttr("disabled");
-                            $('#createAdModalDismissBtn').removeAttr("disabled");
-                            $('#createAdModalCloseBtn').removeAttr("disabled");
-                            $('#adTitleForm').removeAttr("disabled");
-                            $('#adTypeForm').removeAttr("disabled");
-                            $('#fromDateForm').removeAttr("disabled");
-                            $('#toDateForm').removeAttr("disabled");
-                            $('#adEnabledForm').removeAttr("disabled");
-                            $('#customFile').removeAttr("disabled");
-                            $scope.uploadProgress = 0;
-                            $('#adFormPB').css('width', 0 + '%');
-                            $('#pb').css('visibility', 'hidden');
-                            $scope.$digest();
-                            toastr.error("Unknown Server Error");
-                            break;
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                    case 'storage/unauthorized':
+                        $('#createAdModalSubmitBtn').val('Add');
+                        $('#createAdModalSubmitBtn').removeAttr("disabled");
+                        $('#createAdModalDismissBtn').removeAttr("disabled");
+                        $('#createAdModalCloseBtn').removeAttr("disabled");
+                        $('#adTitleForm').removeAttr("disabled");
+                        $('#adTypeForm').removeAttr("disabled");
+                        $('#fromDateForm').removeAttr("disabled");
+                        $('#toDateForm').removeAttr("disabled");
+                        $('#adEnabledForm').removeAttr("disabled");
+                        $('#customFile').removeAttr("disabled");
+                        $scope.uploadProgress = 0;
+                        $('#adFormPB').css('width', 0 + '%');
+                        $('#pb').css('visibility', 'hidden');
+                        $scope.$digest();
+                        toastr.error("Unknown Server Error");
+                        break;
 
-                        case 'storage/canceled':
-                            $('#createAdModalSubmitBtn').val('Add');
-                            $('#createAdModalSubmitBtn').removeAttr("disabled");
-                            $('#createAdModalDismissBtn').removeAttr("disabled");
-                            $('#createAdModalCloseBtn').removeAttr("disabled");
-                            $('#adTitleForm').removeAttr("disabled");
-                            $('#adTypeForm').removeAttr("disabled");
-                            $('#fromDateForm').removeAttr("disabled");
-                            $('#toDateForm').removeAttr("disabled");
-                            $('#adEnabledForm').removeAttr("disabled");
-                            $('#customFile').removeAttr("disabled");
-                            $scope.uploadProgress = 0;
-                            $('#adFormPB').css('width', 0 + '%');
-                            $('#pb').css('visibility', 'hidden');
-                            $scope.$digest();
-                            toastr.error("Unknown Server Error");
-                            break;
+                    case 'storage/canceled':
+                        $('#createAdModalSubmitBtn').val('Add');
+                        $('#createAdModalSubmitBtn').removeAttr("disabled");
+                        $('#createAdModalDismissBtn').removeAttr("disabled");
+                        $('#createAdModalCloseBtn').removeAttr("disabled");
+                        $('#adTitleForm').removeAttr("disabled");
+                        $('#adTypeForm').removeAttr("disabled");
+                        $('#fromDateForm').removeAttr("disabled");
+                        $('#toDateForm').removeAttr("disabled");
+                        $('#adEnabledForm').removeAttr("disabled");
+                        $('#customFile').removeAttr("disabled");
+                        $scope.uploadProgress = 0;
+                        $('#adFormPB').css('width', 0 + '%');
+                        $('#pb').css('visibility', 'hidden');
+                        $scope.$digest();
+                        toastr.error("Unknown Server Error");
+                        break;
 
-                        case 'storage/unknown':
-                            $('#createAdModalSubmitBtn').val('Add');
-                            $('#createAdModalSubmitBtn').removeAttr("disabled");
-                            $('#createAdModalDismissBtn').removeAttr("disabled");
-                            $('#createAdModalCloseBtn').removeAttr("disabled");
-                            $('#adTitleForm').removeAttr("disabled");
-                            $('#adTypeForm').removeAttr("disabled");
-                            $('#fromDateForm').removeAttr("disabled");
-                            $('#toDateForm').removeAttr("disabled");
-                            $('#adEnabledForm').removeAttr("disabled");
-                            $('#customFile').removeAttr("disabled");
-                            $scope.uploadProgress = 0;
-                            $('#adFormPB').css('width', 0 + '%');
-                            $('#pb').css('visibility', 'hidden');
-                            $scope.$digest();
-                            toastr.error("Unknown Server Error");
-                            break;
-                    }
-                }, function () {
-                    // Upload completed successfully, now we can get the download URL
-                    var fileLoc;
-                    uploadTask
-                        .snapshot
-                        .ref
-                        .getDownloadURL()
-                        .then(function (downloadURL) {
-                            fileLoc = downloadURL;
-                            var from = $scope.fromDate;
-                            var to = $scope.toDate;
-                            var adObj = {
-                                'title': $scope.adTitle,
-                                'type': $scope.adType,
-                                'from': from.getDate() + '/' + (from.getMonth() + 1) + '/' + from.getFullYear(),
-                                'to': to.getDate() + '/' + (to.getMonth() + 1) + '/' + to.getFullYear(),
-                                'enabled': $scope.adEnabled == 'yes'
-                                    ? true
-                                    : false,
-                                'url': fileLoc,
-                                'uploadLoc': uploadLoc,
-                                'filter': {}
+                    case 'storage/unknown':
+                        $('#createAdModalSubmitBtn').val('Add');
+                        $('#createAdModalSubmitBtn').removeAttr("disabled");
+                        $('#createAdModalDismissBtn').removeAttr("disabled");
+                        $('#createAdModalCloseBtn').removeAttr("disabled");
+                        $('#adTitleForm').removeAttr("disabled");
+                        $('#adTypeForm').removeAttr("disabled");
+                        $('#fromDateForm').removeAttr("disabled");
+                        $('#toDateForm').removeAttr("disabled");
+                        $('#adEnabledForm').removeAttr("disabled");
+                        $('#customFile').removeAttr("disabled");
+                        $scope.uploadProgress = 0;
+                        $('#adFormPB').css('width', 0 + '%');
+                        $('#pb').css('visibility', 'hidden');
+                        $scope.$digest();
+                        toastr.error("Unknown Server Error");
+                        break;
+                }
+            }, function () {
+                // Upload completed successfully, now we can get the download URL
+                var fileLoc;
+                uploadTask
+                    .snapshot
+                    .ref
+                    .getDownloadURL()
+                    .then(function (downloadURL) {
+                        fileLoc = downloadURL;
+                        var from = $scope.fromDate;
+                        var to = $scope.toDate;
+                        var adObj = {
+                            'title': $scope.adTitle,
+                            'type': $scope.adType,
+                            'from': from.getDate() + '/' + (from.getMonth() + 1) + '/' + from.getFullYear(),
+                            'to': to.getDate() + '/' + (to.getMonth() + 1) + '/' + to.getFullYear(),
+                            'enabled': $scope.adEnabled == 'yes'
+                                ? true
+                                : false,
+                            'url': fileLoc,
+                            'uploadLoc': uploadLoc,
+                            'filter': {}
+                        }
+
+                        $('#createAdModalSubmitBtn').val('Add');
+                        $('#createAdModalSubmitBtn').removeAttr("disabled");
+                        $('#createAdModalDismissBtn').removeAttr("disabled");
+                        $('#createAdModalCloseBtn').removeAttr("disabled");
+                        $('#adTitleForm').removeAttr("disabled");
+                        $('#adTypeForm').removeAttr("disabled");
+                        $('#fromDateForm').removeAttr("disabled");
+                        $('#toDateForm').removeAttr("disabled");
+                        $('#adEnabledForm').removeAttr("disabled");
+                        $('#customFile').removeAttr("disabled");
+                        $('#createAdModal').modal('hide');
+
+                        $rootScope.isLoading = true;
+                        $rootScope.$digest();
+
+                        $http({
+                            method: "POST",
+                            url: "https://us-central1-dignpick.cloudfunctions.net/api/newAd",
+                            data: {
+                                'ad': adObj
                             }
-
-                            $('#createAdModalSubmitBtn').val('Add');
-                            $('#createAdModalSubmitBtn').removeAttr("disabled");
-                            $('#createAdModalDismissBtn').removeAttr("disabled");
-                            $('#createAdModalCloseBtn').removeAttr("disabled");
-                            $('#adTitleForm').removeAttr("disabled");
-                            $('#adTypeForm').removeAttr("disabled");
-                            $('#fromDateForm').removeAttr("disabled");
-                            $('#toDateForm').removeAttr("disabled");
-                            $('#adEnabledForm').removeAttr("disabled");
-                            $('#customFile').removeAttr("disabled");
-                            $('#createAdModal').modal('hide');
-
-                            $rootScope.isLoading = true;
-                            $rootScope.$digest();
-
-                            $http({
-                                method: "POST",
-                                url: "https://us-central1-dignpick.cloudfunctions.net/api/newAd",
-                                data: {
-                                    'ad': adObj
-                                }
-                            }).then((response) => {
-                                var resultAd = response.data.result;
-                                data.push(resultAd);
-                                $('#manageAdsTable').bootstrapTable('load', data);
-                                $rootScope.isLoading = false;
-                                toastr.success("Ad Created");
-                                $scope.adTitle = "";
-                                $scope.adType = "";
-                                $scope.fromDate = "";
-                                $scope.toDate = "";
-                                $scope.adType = 'Image';
-                                $scope.uploadProgress = 0;
-                                $scope.adEnabled = 'yes';
-                                $scope.fileName = "Choose File";
-                            })
-                            .catch((error) => {
-                                $rootScope.isLoading = false;
-                                toastr.error("Error creating Ad");
-                            });
-
-                            // db
-                            //     .collection("ads")
-                            //     .add(adObj)
-                            //     .then((doc) => {
-                            //         adObj['uid'] = doc.id;
-                            //         data.push(adObj);
-                            //         $('#manageAdsTable').bootstrapTable('load', data);
-                            //         $rootScope.isLoading = false;
-                            //         $rootScope.$digest();
-                            //         toastr.success("Ad Created");
-                            //         $scope.adTitle = "";
-                            //         $scope.adType = "";
-                            //         $scope.fromDate = "";
-                            //         $scope.toDate = "";
-                            //         $scope.adType = 'Image';
-                            //         $scope.uploadProgress = 0;
-                            //         $scope.adEnabled = 'yes';
-                            //         $scope.fileName = "Choose File";
-                            //     })
-                            //     .catch((error) => {
-                            //         $rootScope.isLoading = false;
-                            //         $rootScope.$digest();
-                            //         toastr.error("Error creating Ad");
-                            //     });
-                        })
-                        .catch((error) => {
-                            $('#createAdModalSubmitBtn').val('Add');
-                            $('#createAdModalSubmitBtn').removeAttr("disabled");
-                            $('#createAdModalDismissBtn').removeAttr("disabled");
-                            $('#createAdModalCloseBtn').removeAttr("disabled");
-                            $('#adTitleForm').removeAttr("disabled");
-                            $('#adTypeForm').removeAttr("disabled");
-                            $('#fromDateForm').removeAttr("disabled");
-                            $('#toDateForm').removeAttr("disabled");
-                            $('#adEnabledForm').removeAttr("disabled");
-                            $('#customFile').removeAttr("disabled");
+                        }).then((response) => {
+                            var resultAd = response.data.result;
+                            data.push(resultAd);
+                            $('#manageAdsTable').bootstrapTable('load', data);
+                            $rootScope.isLoading = false;
+                            toastr.success("Ad Created");
+                            $scope.adTitle = "";
+                            $scope.adType = "";
+                            $scope.fromDate = "";
+                            $scope.toDate = "";
+                            $scope.adType = 'Image';
                             $scope.uploadProgress = 0;
-                            $('#adFormPB').css('width', 0 + '%');
-                            $('#pb').css('visibility', 'hidden');
-                            $scope.$digest();
-                            toastr.error("Unknown Server Error");
+                            $scope.adEnabled = 'yes';
+                            $scope.fileName = "Choose File";
+                        }).catch((error) => {
+                            $rootScope.isLoading = false;
+                            toastr.error("Error creating Ad");
                         });
 
-                });
+                        // db     .collection("ads")     .add(adObj)     .then((doc) => { adObj['uid'] =
+                        // doc.id;         data.push(adObj); $('#manageAdsTable').bootstrapTable('load',
+                        // data); $rootScope.isLoading = false;         $rootScope.$digest();
+                        // toastr.success("Ad Created");         $scope.adTitle = ""; $scope.adType =
+                        // "";         $scope.fromDate = "";         $scope.toDate = "";
+                        // $scope.adType = 'Image';         $scope.uploadProgress = 0; $scope.adEnabled
+                        // = 'yes';         $scope.fileName = "Choose File";     }) .catch((error) => {
+                        //        $rootScope.isLoading = false; $rootScope.$digest();
+                        // toastr.error("Error creating Ad");     });
+                    })
+                    .catch((error) => {
+                        $('#createAdModalSubmitBtn').val('Add');
+                        $('#createAdModalSubmitBtn').removeAttr("disabled");
+                        $('#createAdModalDismissBtn').removeAttr("disabled");
+                        $('#createAdModalCloseBtn').removeAttr("disabled");
+                        $('#adTitleForm').removeAttr("disabled");
+                        $('#adTypeForm').removeAttr("disabled");
+                        $('#fromDateForm').removeAttr("disabled");
+                        $('#toDateForm').removeAttr("disabled");
+                        $('#adEnabledForm').removeAttr("disabled");
+                        $('#customFile').removeAttr("disabled");
+                        $scope.uploadProgress = 0;
+                        $('#adFormPB').css('width', 0 + '%');
+                        $('#pb').css('visibility', 'hidden');
+                        $scope.$digest();
+                        toastr.error("Unknown Server Error");
+                    });
+
+            });
 
         }
 
@@ -295,9 +335,7 @@ angular
             }
         }
 
-        $scope.manageAd = (index) => {
-
-        }
+        $scope.manageAd = (index) => {}
 
         $scope.createAdSubmit = () => {
             newAd();
@@ -319,12 +357,10 @@ angular
             if (data[index].enabled) {
                 if (data[index].status == 'Active') {
                     return '<span style="color: green; font-weight: bold;">Active</span>';
-                }
-                else {
+                } else {
                     return '<span style="color: red; font-weight: bold;">Inactive</span>';
                 }
-            }
-            else {
+            } else {
                 return '<span style="color: red; font-weight: bold;">Disabled</span>';
             }
         }
