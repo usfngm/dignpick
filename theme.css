@@ -49,9 +49,6 @@ body, html {
     display: inline-block;
 }
 
-.bootstrap-table input {
-    width: 250px;
-}
 
 .search {
     display: flex;
@@ -103,4 +100,29 @@ body, html {
 
 #createAdForm label {
     font-weight: 600;
+}
+
+.countryExpand {
+    cursor: pointer;
+}
+
+.countryExpand:hover {
+    text-decoration: underline; 
+}
+
+.countryExpand:active {
+    color: gray;
+}
+
+.linkStyle {
+    cursor: pointer;
+}
+
+
+.linkStyle:hover {
+    text-decoration: underline; 
+}
+
+.linkStyle:active {
+    color: gray;
 }
