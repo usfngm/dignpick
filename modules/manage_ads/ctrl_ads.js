@@ -10,6 +10,9 @@ angular
         var locationsData = [];
         var file;
         var data = [];
+        var parentCountry;
+        var parentState;
+        var depth = 0;
         // Create a root reference
         var storageRef = firebase
             .storage()
@@ -18,24 +21,30 @@ angular
         $rootScope.isLoading = true;
 
         unbindCallbacks = (i) => {
-            for ( var j = 0; j < i; j++ )
-            {
+            for (var j = 0; j < i; j++) {
                 $('#country' + j).unbind('click');
             }
         }
 
         areasTableLoaded = (i) => {
             $('#countryFilterTable').bootstrapTable('hideColumn', 'expandBtn');
+            $('#countryNameBread').unbind('click');
             $('#countryNameBread').click(() => {
+                depth = 1;
                 $('#stateNameBread').hide();
                 $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
                 statesTableLoaded(i);
             })
+            console.log(depth);
+            console.log('PARENT COUNTRY = ' + parentCountry.name);
+            console.log('PARENT STATE = ' + parentState.name);
         }
         statesTableLoaded = (i) => {
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let j = 0; j < locationsData[i].states.length; j++) {
                 $('#country' + j).click(() => {
+                    parentState = locationsData[i].states[j];
+                    depth++;
                     $('#stateNameBread').text(locationsData[i].states[j].name);
                     $('#stateNameBread').show();
                     unbindCallbacks(locationsData[i].states.length);
@@ -43,12 +52,16 @@ angular
                     areasTableLoaded(i);
                 });
             }
+            console.log(depth);
+            console.log('PARENT COUNTRY = ' + parentCountry.name);
         }
         countryTableLoaded = () => {
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let i = 0; i < locationsData.length; i++) {
                 console.log('hello');
                 $('#country' + i).click(() => {
+                    parentCountry = locationsData[i];
+                    depth++;
                     $('#countryNameBread').text(locationsData[i].name);
                     $('#countryNameBread').show();
                     unbindCallbacks(locationsData.length);
@@ -56,9 +69,65 @@ angular
                     statesTableLoaded(i);
                 });
             }
+            console.log(depth);
         }
 
+        isAllUnchecked = (data) => {
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].selected) 
+                    return false;
+                }
+            return true;
+        }
+
+        listenForCheckEvents = () => {
+            $('#countryFilterTable')
+                .on('check.bs.table', function (e, element) {
+                    if (depth == 2) {
+                        parentState.selected = true;
+                        parentCountry.selected = true;
+                    }
+                });
+            $('#countryFilterTable').on('uncheck.bs.table', function (e, element) {
+                if (depth == 2) {
+                    if (isAllUnchecked(parentState.areas)) {
+                        parentState.selected = false;
+                    }
+                    if (isAllUnchecked(parentCountry.states))
+                    {
+                        parentCountry.selected = false;
+                    }
+                }
+            });
+
+            $('#countryFilterTable').on('check-all.bs.table', function (e, rows) {
+                if (depth == 2) {
+                    parentState.selected = true;
+                    parentCountry.selected = true;
+                }
+                else if ( depth == 1 )
+                {
+                    parentCountry.selected = true;
+                }
+            });
+            $('#countryFilterTable').on('uncheck-all.bs.table', function (e, rows) {
+                if (depth == 2) {
+                    parentState.selected = false;
+                    if (isAllUnchecked(parentCountry.states))
+                    {
+                        parentCountry.selected = false;
+                    }
+                }
+                else if ( depth == 1 )
+                {
+                    parentCountry.selected = false;
+                    console.log(rows);
+                }
+            });
+        };
+
         $('#homeNameBread').click(() => {
+            depth = 0;
             $('#countryNameBread').hide();
             $('#stateNameBread').hide();
             $('#countryFilterTable').bootstrapTable('load', {'data': locationsData});
@@ -80,6 +149,7 @@ angular
                     $('#manageAdsTable').bootstrapTable({data: data});
                     $('#countryFilterTable').bootstrapTable({data: locationsData});
                     countryTableLoaded();
+                    listenForCheckEvents();
                     $rootScope.isLoading = false;
                     $rootScope.$digest();
                     $('#manageAdsContainer').show();
