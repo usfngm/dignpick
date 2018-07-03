@@ -17,7 +17,15 @@ angular
 
         $rootScope.isLoading = true;
 
+        unbindCallbacks = (i) => {
+            for ( var j = 0; j < i; j++ )
+            {
+                $('#country' + j).unbind('click');
+            }
+        }
+
         areasTableLoaded = (i) => {
+            $('#countryFilterTable').bootstrapTable('hideColumn', 'expandBtn');
             $('#countryNameBread').click(() => {
                 $('#stateNameBread').hide();
                 $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
@@ -25,33 +33,37 @@ angular
             })
         }
         statesTableLoaded = (i) => {
+            $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let j = 0; j < locationsData[i].states.length; j++) {
                 $('#country' + j).click(() => {
                     $('#stateNameBread').text(locationsData[i].states[j].name);
                     $('#stateNameBread').show();
+                    unbindCallbacks(locationsData[i].states.length);
                     $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states[j].areas});
                     areasTableLoaded(i);
                 });
             }
         }
         countryTableLoaded = () => {
+            $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let i = 0; i < locationsData.length; i++) {
-                console.log(i);
+                console.log('hello');
                 $('#country' + i).click(() => {
                     $('#countryNameBread').text(locationsData[i].name);
                     $('#countryNameBread').show();
+                    unbindCallbacks(locationsData.length);
                     $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
                     statesTableLoaded(i);
                 });
             }
-
-            $('#homeNameBread').click(() => {
-                $('#countryNameBread').hide();
-                $('#stateNameBread').hide();
-                $('#countryFilterTable').bootstrapTable('load', {'data': locationsData});
-                countryTableLoaded();
-            });
         }
+
+        $('#homeNameBread').click(() => {
+            $('#countryNameBread').hide();
+            $('#stateNameBread').hide();
+            $('#countryFilterTable').bootstrapTable('load', {'data': locationsData});
+            countryTableLoaded();
+        });
 
         $http({method: "POST", url: "https://us-central1-dignpick.cloudfunctions.net/api/getAllAds"}).then((response) => {
             console.log('REPONSE FROM WEB');
