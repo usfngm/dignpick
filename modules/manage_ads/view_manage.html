@@ -22,7 +22,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">New Ad</h5>
+                    <h5 class="modal-title" id="adModal">New Ad</h5>
                     <button id="createAdModalDismissBtn" type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -66,12 +66,12 @@
                             <div style="flex: 1;">
                                 From Age
                                 <input id="adTitleForm" class='form-control' style="width: 75%;" type='number' placeholder="From Age" ng-model='fromAgeFilter'
-                                    required/>
+                                />
                             </div>
                             <div style="flex: 1;">
                                 To Age
                                 <input id="adTitleForm" class='form-control' style="width: 75%;" type='number' placeholder="To Age" ng-model='toAgeFilter'
-                                    required/>
+                                />
                             </div>
                         </div>
                         <br>
@@ -99,7 +99,7 @@
                                         Countries
                                     </li>
                                     <li id="countryNameBread" style="display: none;" class="breadcrumb-item countryExpand">
-                                        Egypt
+                                        -
                                     </li>
                                     <li id="stateNameBread" style="display: none;" class="breadcrumb-item active" aria-current="page">Cairo</li>
                                 </ol>
@@ -133,4 +133,6 @@
             </div>
         </div>
     </div>
+
+</div>
 </div>

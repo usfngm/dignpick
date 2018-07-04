@@ -581,6 +581,52 @@ app.post("/registerNewUser", (request, response) => {
     }
 });
 
+app.post("/editAd", (request, response) => {
+    if (request.body.ad) {
+        var ad = request.body.ad;
+        console.log('started getting all ads');
+        var db = admin.firestore();
+        var results = [];
+        var fromParts = ad
+            .from
+            .split('/');
+        var fromDate = new Date(fromParts[2], fromParts[1] - 1, fromParts[0]);
+        var toParts = ad
+            .to
+            .split('/');
+        var toDate = new Date(toParts[2], toParts[1] - 1, toParts[0]);
+        var current = Date.now();
+
+        if (ad.enabled) {
+            if (current >= fromDate && toDate >= current) {
+                ad['status'] = 'Active';
+            } else {
+                ad['status'] = 'Inactive';
+            }
+        } else {
+            ad['status'] = 'Disabled';
+        }
+        db
+            .collection('ads')
+            .doc(ad.uid)
+            .set(ad)
+            .then((doc) => {
+                response
+                    .status(200)
+                    .send({ 'result': ad });
+            })
+            .catch((error) => {
+                response
+                    .status(400)
+                    .send({ 'error': error });
+            });
+    } else {
+        response
+            .status(400)
+            .send({ "Error": "Incomplete Parameters" });
+    }
+});
+
 app.post("/newAd", (request, response) => {
     if (request.body.ad) {
         var ad = request.body.ad;
@@ -625,60 +671,6 @@ app.post("/newAd", (request, response) => {
             .status(400)
             .send({ "Error": "Incomplete Parameters" });
     }
-});
-
-const getAllLocationsHelper = async (cb, e) => {
-    var results = [];
-    try {
-        var locs = await db
-            .collection('locations')
-            .get();
-        locs.forEach(doc => {
-            var tempLoc = doc.data();
-            tempLoc['uid'] = doc.id;
-            tempLoc['states'] = [];
-            results.push(tempLoc);
-        });
-        for (var i = 0; i < results.length; i++) {
-            var states = await db.collection('locations')
-                .doc(results[i].uid).collection('states')
-                .get();
-            states.forEach(state => {
-                var tempState = state.data();
-                tempState['uid'] = state.id;
-                tempState['areas'] = [];
-                results[i].states.push(tempState);
-            });
-            for (var j = 0; j < states.size; j++) {
-                var areas = await db.collection('locations')
-                    .doc(results[i].uid).collection('states')
-                    .doc(results[i].states[j].uid).collection('areas').get();
-                areas.forEach(area => {
-                    var tempArea = area.data();
-                    tempArea['uid'] = area.id;
-                    results[i].states[j].areas.push(tempArea);
-                });
-            }
-        }
-        cb(results);
-    }
-    catch (err) {
-        e(err);
-    }
-}
-
-app.post("/getAllLocations", (request, response) => {
-    var db = admin.firestore;
-    var results = [];
-    getAllLocationsHelper((results) => {
-        response
-            .status(200)
-            .send(results);
-    }, (error) => {
-        response
-            .status(400)
-            .send({ 'error': error });
-    });
 });
 
 app.post("/getAllAds", (request, response) => {
