@@ -1,0 +1,17 @@
+<div id="settingsContainer" style="padding-top: 30px;" ng-controller="settingsCtrl">
+    <h3>Application Settings</h3>
+    <ul class="nav nav-tabs" style="padding-top: 10px;">
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{active:$root.settingsSelectedTab == 'locationsSettings'}" ui-sref="locationSettings">Locations</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{active:$root.settingsSelectedTab == 'restaurantsSettings'}" ui-sref="restaurantsSettings">Restaurants</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{active:$root.settingsSelectedTab == 'appSettings'}" ui-sref="appSettings">Application Settings</a>
+        </li>
+    </ul>
+    <ui-view>
+
+    </ui-view>
+</div>

@@ -101,6 +101,20 @@ angular
             parent: 'home'
         }
 
+        var settings = {
+            name: 'settings',
+            url: '/settings',
+            templateUrl: 'modules/settings/view_settings.html',
+            parent: 'home'
+        }
+
+        var locationsSettings = {
+            name: 'locationsSettings',
+            url: '/locations',
+            templateUrl: 'modules/settings/locations/view_locations.html',
+            parent: 'settings'
+        }
+
         $stateProvider.state(loginState);
         $stateProvider.state(homeState);
         $stateProvider.state(manageRestaurantsState);
@@ -114,6 +128,8 @@ angular
         $stateProvider.state(editMenuDessertsState);
         $stateProvider.state(editMenuShishaState);
         $stateProvider.state(manageAds);
+        $stateProvider.state(settings);
+        $stateProvider.state(locationsSettings);
 
     })
     .run(function ($rootScope, $transitions, $state, $window) {
@@ -167,11 +183,17 @@ angular
             var to = transition
                 .to()
                 .name;
+            console.log(to);
             if (to == 'manageUser') {
                 $rootScope.selectedTab = 'viewAddUsers';
             } else if (to == 'newRest' || to == 'editRest' || to == 'editMenu' || to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
                 $rootScope.selectedTab = 'manageRest';
-            } else 
+            } else if ( to == 'locationsSettings' )
+            {
+                $rootScope.selectedTab = 'settings';
+                $rootScope.settingsSelectedTab = to;
+            }  
+            else 
                 $rootScope.selectedTab = to;
             
             if (to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
