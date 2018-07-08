@@ -1,1 +1,56 @@
-<h1>Locations</h1>
+<div id="locationSettingsContainer" ng-controller="locationSettingsCtrl">
+    <div id="toolbar">
+        <nav aria-label="breadcrumb">
+            <ol style="background-color: #f2f2f2;" class="breadcrumb">
+                <li id="homeNameBread" class="breadcrumb-item linkStyle">
+                    Countries
+                </li>
+                <li id="countryNameBread" style="display: none;" class="breadcrumb-item countryExpand">
+                    -
+                </li>
+                <li id="stateNameBread" style="display: none;" class="breadcrumb-item active" aria-current="page">Cairo</li>
+            </ol>
+        </nav>
+    </div>
+    <table id="countryFilterTable" data-toolbar="#toolbar" data-search="true" data-search-time-out=0
+        data-pagination="true">
+        <thead class="thead-dark">
+            <tr>
+                <th data-width="5%" data-formatter="formatIDCount">#</th>
+                <th data-width="65%" data-field="name">Name</th>
+                <th data-field='expandBtn' data-formatter="formatExpandCountry">Expand</th>
+                <th data-formatter="formatEditButton">Edit</th>
+                <th data-formatter="formatDeleteButton">Delete</th>
+            </tr>
+        </thead>
+    </table>
+    <div style="margin-top: 20px;" class="form-group col-md-12">
+        <button id="newBtn" ng-click="newItem()" class="form-control btn btn-primary">New Country</button>
+    </div>
+
+    <div class="modal fade" id="createLocationItemModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createLocationItemModalTitle">New Ad</h5>
+                    <button id="createLocationItemModalDismissBtn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="createLocationItemForm" ng-submit="createLocationItemSubmit()">
+                    <div class="modal-body">
+                        <label id="createLocationItemLabel">County Name</label>
+                        <input id="createLocationItemInput" class='form-control' type='text' placeholder="Ad Title" ng-model='locationName' required/>
+                        <br>
+                    </div>
+                    <div class="modal-footer">
+                        <input id="createLocationItemModalSubmitBtn" type="submit" class="btn btn-primary" value="Add" />
+                </form>
+                <button id="createLocationItemModalCloseBtn" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

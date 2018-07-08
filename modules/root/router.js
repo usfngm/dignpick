@@ -115,6 +115,20 @@ angular
             parent: 'settings'
         }
 
+        var restaurantSettings = {
+            name: 'restaurantSettings',
+            url: '/restaurants',
+            templateUrl: 'modules/settings/restaurants/view_restaurants.html',
+            parent: 'settings'
+        }
+
+        var appSettings = {
+            name: 'appSettings',
+            url: '/app',
+            templateUrl: 'modules/settings/application/view_application.html',
+            parent: 'settings'
+        }
+
         $stateProvider.state(loginState);
         $stateProvider.state(homeState);
         $stateProvider.state(manageRestaurantsState);
@@ -130,6 +144,8 @@ angular
         $stateProvider.state(manageAds);
         $stateProvider.state(settings);
         $stateProvider.state(locationsSettings);
+        $stateProvider.state(restaurantSettings);
+        $stateProvider.state(appSettings);
 
     })
     .run(function ($rootScope, $transitions, $state, $window) {
@@ -162,10 +178,7 @@ angular
                     A helper snippet for highlighting the
                     selected tab
                 */
-                var to = transition
-                    .to()
-                    .name;
-                $rootScope.selectedTab = to;
+                // var to = transition     .to()     .name; $rootScope.selectedTab = to;
             }
 
             return true;
@@ -188,16 +201,19 @@ angular
                 $rootScope.selectedTab = 'viewAddUsers';
             } else if (to == 'newRest' || to == 'editRest' || to == 'editMenu' || to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
                 $rootScope.selectedTab = 'manageRest';
-            } else if ( to == 'locationsSettings' )
-            {
+            } else if (to == 'locationsSettings' || to == 'restaurantSettings' || to == 'appSettings') {
                 $rootScope.selectedTab = 'settings';
                 $rootScope.settingsSelectedTab = to;
-            }  
-            else 
+            } else 
                 $rootScope.selectedTab = to;
             
             if (to == 'editMenuDrinks' || to == 'editMenuDishes' || to == "editMenuDesserts" || to == "editMenuShisha") {
                 $rootScope.editMenuSelectedTab = to;
+            }
+
+            if (to == 'settings')
+            {
+                $state.go('locationsSettings');
             }
 
             return true;
