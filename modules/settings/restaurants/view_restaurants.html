@@ -1,1 +1,79 @@
-<h1>Restaurant Settings</h1>
+<div style="margin-top: 25px;" id="restaurantsSettingsContainer" ng-controller="restaurantsSettingsCtrl">
+    <h4>Restaurant Types</h4>
+    <table id="restaurantsTypeTable" data-page-size='5' data-search="true" data-search-time-out=0 data-pagination="true">
+        <thead class="thead-dark">
+            <tr>
+                <th data-width="2%" data-formatter="formatIDCount">#</th>
+                <th data-width="70%" data-field="name">Type name</th>
+                <th data-formatter="formatEditButton">Edit</th>
+                <th data-formatter="formatDeleteButton">Delete</th>
+            </tr>
+        </thead>
+    </table>
+    <div style="margin-top: 20px;" class="form-group col-md-12">
+        <button ng-click="newResType()" class="form-control btn btn-primary">New Type</button>
+    </div>
+
+    <div class="modal fade" id="createResTypeModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createResTypeModalTitle">New Restaurant Type</h5>
+                    <button id="createResTypeModalDismissBtn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="createResTypeForm" ng-submit="createResTypeSubmit()">
+                    <div class="modal-body">
+                        <label id="createResTypeLabel">Type Name</label>
+                        <input id="createResTypeInput" class='form-control' type='text' placeholder="Type (Ex. Indian Food)" ng-model='typeName'
+                            required/>
+                        <br>
+                    </div>
+                    <div class="modal-footer">
+                        <input id="createResTypeModalSubmitBtn" type="submit" class="btn btn-primary" value="Add" />
+                </form>
+                <button id="createResTypeModalCloseBtn" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 style="margin-top: 50px;">Restaurant Tags</h4>
+    <table id="restaurantsTagTable" data-page-size='5' data-search="true" data-search-time-out=0 data-pagination="true">
+        <thead class="thead-dark">
+            <tr>
+                <th data-width="2%" data-formatter="formatIDCount">#</th>
+                <th data-field="name">Tag Name</th>
+                <th data-width="10%" data-formatter="formatDeleteTagButton">Delete</th>
+            </tr>
+        </thead>
+    </table>
+    <div style="margin-top: 20px;" class="form-group col-md-12">
+        <button ng-click="newResTag()" class="form-control btn btn-primary">New Tag</button>
+    </div>
+    <div class="modal fade" id="createResTagModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createResTagModalTitle">New Restaurant Tag</h5>
+                    <button id="createResTagModalDismissBtn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="createResTagForm" ng-submit="createResTagSubmit()">
+                    <div class="modal-body">
+                        <label id="createResTagLabel">Tag Name</label>
+                        <input id="createResTagInput" class='form-control' type='text' placeholder="Tag (Ex. dating)" ng-model='tagName' required/>
+                        <br>
+                    </div>
+                    <div class="modal-footer">
+                        <input id="createResTagModalSubmitBtn" type="submit" class="btn btn-primary" value="Add" />
+                </form>
+                <button id="createResTagModalCloseBtn" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
