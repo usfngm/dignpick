@@ -10,6 +10,8 @@ angular
         var table_data = [];
 
         var branches_list = [];
+        $scope.rest_tags = [];
+        $scope.rest_types = [];
 
         $scope.restOutdoorsTag = false;
         $scope.restAtHomeTag = false;
@@ -22,15 +24,38 @@ angular
         $scope.restWifiTag = false;
         $scope.restNightLifeTag = false;
 
+        loadAllData = async function () {
+            let tags = await db.collection('tags').get();
+            tags.forEach((tag) => {
+                var tempTag = tag.data();
+                tempTag['uid'] = tag.id;
+                $scope.rest_tags.push(tempTag);
+            });
+            let types = await db.collection('restaurant_types').get();
+            types.forEach((type) => {
+                var tempType = type.data();
+                tempType['uid'] = type.id;
+                $scope.rest_types.push(tempType);
+            });
+        }
+
+        $rootScope.isLoading = true;
+        (async () => {
+            await loadAllData();
+            $rootScope.isLoading = false;
+            $rootScope.$digest();
+            //$scope.restFoodType = rest_types[0].name;
+        })()
+
         const searchMap = (query, token, cb, error) => {
             $http({
-                    method: "POST",
-                    url: "https://us-central1-dignpick.cloudfunctions.net/api/searchPlaces",
-                    data: {
-                        'query': query,
-                        'token': token
-                    }
-                })
+                method: "POST",
+                url: "https://us-central1-dignpick.cloudfunctions.net/api/searchPlaces",
+                data: {
+                    'query': query,
+                    'token': token
+                }
+            })
                 .then(function mySuccess(response) {
                     console.log(response);
                     var places = JSON
@@ -66,10 +91,11 @@ angular
 
             for (var i = 0; i < places_array.length; i++) {
                 var obj = {
+                    'uid': places_array[i].id,
                     'name': places_array[i].name,
                     'address': places_array[i].formatted_address,
-                    'showOnMap': '<button onclick="angular.element(this).scope().showOnMap(' + i + ')" type="button" class="btn btn-primary">Show on map</button>',
-                    'addToList': '<button onclick="angular.element(this).scope().addMapBranch(' + i + ')" type="button" class="btn btn-primary">Add to List</button>'
+                    'showOnMap': '<button onclick="angular.element(this).scope().showOnMap(&quot;' + places_array[i].id + '&quot;)" type="button" class="btn btn-primary">Show on map</button>',
+                    'addToList': '<button onclick="angular.element(this).scope().addMapBranch(&quot;' + places_array[i].id + '&quot;)" type="button" class="btn btn-primary">Add to List</button>'
                 }
                 table_data.push(obj);
             }
@@ -80,7 +106,8 @@ angular
             console.log(places_array);
         }
 
-        $scope.showOnMap = (index) => {
+        $scope.showOnMap = (uid) => {
+            var index = getIndexFromUID(places_array, uid);
             if (marker) {
                 marker.setMap(null)
             };
@@ -88,18 +115,19 @@ angular
             map.panTo(places_array[index].geometry.location);
             marker = new google
                 .maps
-                .Marker({position: places_array[index].geometry.location, map: map});
+                .Marker({ position: places_array[index].geometry.location, map: map });
             map.setZoom(14);
         }
 
-        $scope.showOnMap2 = (index) => {
+        $scope.showOnMap2 = (uid) => {
+            var index = getIndexFromUID(branches_list, uid);
             if (marker) {
                 marker.setMap(null)
             };
             map.panTo(branches_list[index].geometry);
             marker = new google
                 .maps
-                .Marker({position: branches_list[index].geometry, map: map});
+                .Marker({ position: branches_list[index].geometry, map: map });
             map.setZoom(14);
         }
 
@@ -115,9 +143,11 @@ angular
             })
         }
 
-        $scope.addMapBranch = (index) => {
-
+        $scope.addMapBranch = (uid) => {
+            console.log(places_array);
+            var index = getIndexFromUID(places_array, uid);
             var obj = {
+                'uid': places_array[index].id,
                 'address': places_array[index].formatted_address,
                 'geometry': {
                     'lat': places_array[index].geometry.location.lat,
@@ -140,6 +170,7 @@ angular
             $scope.manualLongitude = '';
 
             var obj = {
+                'uid': Date.now() + '',
                 'address': address,
                 'geometry': {
                     'lat': Number(lat),
@@ -159,7 +190,8 @@ angular
             console.log(branches_list);
         }
 
-        $scope.deleteBranch = (index) => {
+        $scope.deleteBranch = (uid) => {
+            var index = getIndexFromUID(branches_list, uid);
             branches_list.splice(index, 1);
             fillBranchsTable();
         }
@@ -170,12 +202,12 @@ angular
 
         formatShowOnMap = (value, row, index, field) => {
             //console.log(row);
-            return '<button onclick="angular.element(this).scope().showOnMap2(' + index + ')" type="button" class="btn btn-primary">Show on map</button>'
+            return '<button onclick="angular.element(this).scope().showOnMap2(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Show on map</button>'
         }
 
         formatDelete = (value, row, index, field) => {
             //console.log(row);
-            return '<button onclick="angular.element(this).scope().deleteBranch(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deleteBranch(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
         $scope.submit = () => {
@@ -207,6 +239,7 @@ angular
                     console.error("Error adding document: ", error);
                     $rootScope.isLoading = false;
                     $rootScope.$digest();
+                    toastr.error('Error in Adding');
                 });
         }
 
@@ -224,11 +257,13 @@ angular
             db
                 .collection("branches")
                 .doc(id)
-                .set({'branches': branches_list})
+                .set({ 'branches': branches_list })
                 .then(function () {
                     console.log("Document successfully written!");
                     $rootScope.isLoading = false;
                     $rootScope.$digest();
+                    toastr.success('Restaurant Created');
+                    $state.go('manageRest');
                 })
                 .catch(function (error) {
                     console.error("Error writing document: ", error);
@@ -254,7 +289,7 @@ angular
         }
         $timeout(function () {
             init_map();
-            $('#mapSearchtable').bootstrapTable({data: table_data});
-            $('#branchesList').bootstrapTable({data: branches_list});
+            $('#mapSearchtable').bootstrapTable({ data: table_data });
+            $('#branchesList').bootstrapTable({ data: branches_list });
         });
     });

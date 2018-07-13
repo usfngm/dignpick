@@ -629,7 +629,8 @@ angular
             }
         }
 
-        loadDataIntoModal = (index) => {
+        loadDataIntoModal = (uid) => {
+            var index = getIndexFromUID(data, uid);
             $scope.adTitle = data[index].title;
             $scope.adType = data[index].type;
             console.log(data[index].from);
@@ -675,7 +676,8 @@ angular
             resetLocationTable();
         }
 
-        $scope.manageAd = (index) => {
+        $scope.manageAd = (uid) => {
+            var index = getIndexFromUID(data, uid);
             manageIndex = index;
             console.log(data[index]);
             changeModalMode('manage');
@@ -698,7 +700,7 @@ angular
         }
 
         formatManageButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().manageAd(' + index + ')" type="button" class="btn btn-primary">Manage</button>'
+            return '<button onclick="angular.element(this).scope().manageAd(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Manage</button>'
         }
 
         $('#rofl').click(() => {
@@ -710,7 +712,7 @@ angular
         }
 
         formatSelectPlace = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().manageAd(' + index + ')" type="button" class="btn btn-primary">Manage</button>'
+            return '<button onclick="angular.element(this).scope().manageAd(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Manage</button>'
         }
 
         formatAdStatus = (value, row, index, field) => {

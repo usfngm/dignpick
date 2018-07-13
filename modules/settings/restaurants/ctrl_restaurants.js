@@ -92,7 +92,8 @@ angular
             }
         }
 
-        $scope.editType = (index) => {
+        $scope.editType = (uid) => {
+            var index = getIndexFromUID(restaurantTypesData, uid);
             $('#createResTypeModalTitle').text('Edit Restaurant Type');
             $('#createResTypeModalSubmitBtn').attr('value', 'Edit');
             $scope.typeName = restaurantTypesData[index].name;
@@ -102,7 +103,8 @@ angular
             resTypeMode = 'edit';
         }
 
-        $scope.deleteType = (index) => {
+        $scope.deleteType = (uid) => {
+            var index = getIndexFromUID(restaurantTypesData, uid);
             bootbox.confirm({
                 message: "Are you sure you want to delete '" + restaurantTypesData[index].name + "'?",
                 buttons: {
@@ -189,9 +191,24 @@ angular
                 })
         }
 
+        isUnique = (arr, tag) => {
+            for ( var i = 0; i < arr.length; i++ )
+            {
+                if ( arr[i].name == tag ) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         $scope.createResTagSubmit = () => {
             if (/\s/.test($scope.tagName)) {
                 alert('Tag names cannot contain whitespaces. Please try again.');
+                return;
+            }
+            if (!isUnique(restaurantTagsData, $scope.tagName))
+            {
+                alert('Tag name already exists. Please try again.');
                 return;
             }
             $('#createResTagModal').modal('hide');
@@ -226,7 +243,8 @@ angular
                 })
         }
 
-        $scope.deleteTag = (index) => {
+        $scope.deleteTag = (uid) => {
+            var index = getIndexFromUID(restaurantTagsData, uid);
             bootbox.confirm({
                 message: "Are you sure you want to delete '" + restaurantTagsData[index].name + "'?",
                 buttons: {
@@ -271,15 +289,15 @@ angular
         }
 
         formatEditButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().editType(' + index + ')" type="button" class="btn btn-primary">Edit</button>'
+            return '<button onclick="angular.element(this).scope().editType(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Edit</button>'
         }
 
         formatDeleteButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().deleteType(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deleteType(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
         formatDeleteTagButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().deleteTag(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deleteTag(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
     });

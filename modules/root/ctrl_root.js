@@ -4,6 +4,14 @@ angular
         toastr.options = {
             "positionClass": "toast-bottom-right"
         };
+        getIndexFromUID = (arr, uid) => {
+            for ( var i = 0; i < arr.length; i++ )
+            {
+                if (arr[i].uid == uid) return i;
+                if (arr[i].id == uid) return i;
+            }
+            return -1;
+        }
         firebase
             .auth()
             .onAuthStateChanged((user) => {

@@ -62,7 +62,8 @@ angular
             return '&#163;' + restItems[index].price;
         }
 
-        $scope.editItem = (index) => {
+        $scope.editItem = (uid) => {
+            var index = getIndexFromUID(restItems, uid);
             $scope.currentDessertName = restItems[index].name;
             $scope.currentDessertPrice = restItems[index].price;
             $scope.currentDessertIndex = index;
@@ -119,7 +120,8 @@ angular
             });
         }
 
-        $scope.deleteItem = (index) => {
+        $scope.deleteItem = (uid) => {
+            var index = getIndexFromUID(restItems, uid);
             console.log(restItems[index].uid);
             bootbox.confirm({
                 message: "Are you sure you want to delete '" + restItems[index].name + "'?",
@@ -156,10 +158,10 @@ angular
         }
 
         formatEditDessertButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().editItem(' + index + ')" type="button" class="btn btn-primary">Edit Item</button>'
+            return '<button onclick="angular.element(this).scope().editItem(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Edit Item</button>'
         }
 
         formatDeleteDessertButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().deleteItem(' + index + ')" type="button" class="btn btn-danger">Delete Item</button>'
+            return '<button onclick="angular.element(this).scope().deleteItem(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete Item</button>'
         }
     });

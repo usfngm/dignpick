@@ -11,7 +11,6 @@ angular
             .then(function (querySnapshot) {
                 var i = 1;
                 querySnapshot.forEach(function (doc) {
-                    // doc.data() is never undefined for query doc snapshots
                     var place = {
                         'id': i,
                         'name': doc
@@ -28,11 +27,13 @@ angular
                 $('#manageRestContainer').show();
             });
 
-        $scope.editPlace = (index) => {
+        $scope.editPlace = (uid) => {
+            var index = getIndexFromUID(data, uid);
             $state.go('editRest', { 'restID': data[index].uid });
         }
 
-        $scope.editMenu = (index) => {
+        $scope.editMenu = (uid) => {
+            var index = getIndexFromUID(data, uid);
             $rootScope.currentRest = data[index].name;
             $state.go('editMenu',
                 {
@@ -40,7 +41,8 @@ angular
                 });
         }
 
-        $scope.deletePlace = (index) => {
+        $scope.deletePlace = (uid) => {
+            var index = getIndexFromUID(data, uid);
             bootbox.confirm({
                 message: "Are you sure you want to delete '" + data[index].name + "'?",
                 buttons: {
@@ -85,15 +87,15 @@ angular
         }
 
         formatDeletePlaceButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().deletePlace(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deletePlace(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
         formatEditPlaceButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().editPlace(' + index + ')" type="button" class="btn btn-primary">Edit Info</button>'
+            return '<button onclick="angular.element(this).scope().editPlace(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Edit Info</button>'
         }
 
         formatEditMenuButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().editMenu(' + index + ')" type="button" class="btn btn-primary">Manage Menu</button>'
+            return '<button onclick="angular.element(this).scope().editMenu(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Manage Menu</button>'
         }
 
         $scope.createPlace = () => {

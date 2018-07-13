@@ -21,11 +21,10 @@
                 <div class="form-group col-md-6">
                     <label>Food Type</label>
                     <select ng-model="restFoodType" class="form-control">
-                        <option selected>Choose</option>
-                        <option value="Oriental">Oriental</option>
-                        <option value="Fast Food">Fast Food</option>
-                        <option value="Chinese">Chinese</option>
-                        <option value="Unknown">Unknown</option>
+                        <option value=''>Choose</option>
+                        <option ng-repeat="type in rest_types" value="{{type.name}}">
+                            {{type.name}}
+                        </option>
                     </select>
                 </div>
                 <div class="form-group col-md-6">

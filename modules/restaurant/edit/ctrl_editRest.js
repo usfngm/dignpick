@@ -156,8 +156,8 @@ angular
                 var obj = {
                     'name': places_array[i].name,
                     'address': places_array[i].formatted_address,
-                    'showOnMap': '<button onclick="angular.element(this).scope().showOnMap(' + i + ')" type="button" class="btn btn-primary">Show on map</button>',
-                    'addToList': '<button onclick="angular.element(this).scope().addMapBranch(' + i + ')" type="button" class="btn btn-primary">Add to List</button>'
+                    'showOnMap': '<button onclick="angular.element(this).scope().showOnMap(&quot;' + places_array[i].id + '&quot;)" type="button" class="btn btn-primary">Show on map</button>',
+                    'addToList': '<button onclick="angular.element(this).scope().addMapBranch(&quot;' + places_array[i].id + '&quot;)" type="button" class="btn btn-primary">Add to List</button>'
                 }
                 table_data.push(obj);
             }
@@ -168,7 +168,9 @@ angular
             console.log(places_array);
         }
 
-        $scope.showOnMap = (index) => {
+        $scope.showOnMap = (uid) => {
+            console.log(places_array);
+            var index = getIndexFromUID(places_array, uid);
             if (marker) {
                 marker.setMap(null)
             };
@@ -180,7 +182,8 @@ angular
             map.setZoom(14);
         }
 
-        $scope.showOnMap2 = (index) => {
+        $scope.showOnMap2 = (uid) => {
+            var index = getIndexFromUID(branches_list, uid);
             if (marker) {
                 marker.setMap(null)
             };
@@ -203,9 +206,10 @@ angular
             })
         }
 
-        $scope.addMapBranch = (index) => {
-
+        $scope.addMapBranch = (uid) => {
+            var index = getIndexFromUID(places_array, uid);
             var obj = {
+                'uid': places_array[index].id,
                 'address': places_array[index].formatted_address,
                 'geometry': {
                     'lat': places_array[index].geometry.location.lat,
@@ -228,6 +232,7 @@ angular
             $scope.manualLongitude = '';
 
             var obj = {
+                'uid': Date.now() + '',
                 'address': address,
                 'geometry': {
                     'lat': Number(lat),
@@ -241,7 +246,8 @@ angular
 
         }
 
-        $scope.deleteBranch = (index) => {
+        $scope.deleteBranch = (uid) => {
+            var index = getIndexFromUID(branches_list, uid);
             branches_list.splice(index, 1);
             fillBranchsTable();
         }
@@ -251,13 +257,11 @@ angular
         }
 
         formatShowOnMap = (value, row, index, field) => {
-            //console.log(row);
-            return '<button onclick="angular.element(this).scope().showOnMap2(' + index + ')" type="button" class="btn btn-primary">Show on map</button>'
+            return '<button onclick="angular.element(this).scope().showOnMap2(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Show on map</button>'
         }
 
         formatDelete = (value, row, index, field) => {
-            //console.log(row);
-            return '<button onclick="angular.element(this).scope().deleteBranch(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deleteBranch(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
         $scope.submit = () => {

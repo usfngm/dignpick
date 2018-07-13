@@ -41,6 +41,7 @@ angular
             console.log('PARENT STATE = ' + parentState.name);
             $('#newBtn').text('New Area');
         }
+        
         statesTableLoaded = (i) => {
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let j = 0; j < locationsData[i].states.length; j++) {
@@ -112,14 +113,15 @@ angular
         }
 
         formatEditButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().editLocation(' + index + ')" type="button" class="btn btn-primary">Edit</button>'
+            return '<button onclick="angular.element(this).scope().editLocation(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Edit</button>'
         }
 
         formatDeleteButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().deleteLocation(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deleteLocation(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
-        $scope.editLocation = (index) => {
+        $scope.editLocation = (uid) => {
+            var index = getIndexFromUID(locationsData, uid);
             mode = 'edit';
             editIndex = index;
             if (depth == 0) {
@@ -147,7 +149,8 @@ angular
             $('#createLocationItemModal').modal('show');
         }
 
-        $scope.deleteLocation = (index) => {
+        $scope.deleteLocation = (uid) => {
+            var index = getIndexFromUID(locationsData, uid);
             if (depth == 0) {
                 bootbox.confirm({
                     message: "Are you sure you want to delete '" + locationsData[index].name + "'?",
