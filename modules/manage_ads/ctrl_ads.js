@@ -16,6 +16,8 @@ angular
         var data = [];
         var parentCountry;
         var parentState;
+        var parentCountryIndex;
+        var parentStateIndex;
         var depth = 0;
         // Create a root reference
         var storageRef = firebase
@@ -62,6 +64,7 @@ angular
                 $('#stateNameBread').hide();
                 $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
                 statesTableLoaded(i);
+                $('#countryFilterTable').bootstrapTable('resetSearch', '');
             })
             console.log(depth);
             console.log('PARENT COUNTRY = ' + parentCountry.name);
@@ -70,14 +73,16 @@ angular
         statesTableLoaded = (i) => {
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let j = 0; j < locationsData[i].states.length; j++) {
-                $('#country' + j).click(() => {
+                $('#country' + locationsData[i].states[j].name + locationsData[i].states[j].name.length).click(() => {
                     parentState = locationsData[i].states[j];
+                    parentStateIndex = j;
                     depth++;
                     $('#stateNameBread').text(locationsData[i].states[j].name);
                     $('#stateNameBread').show();
                     unbindCallbacks(locationsData[i].states.length);
                     $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states[j].areas});
                     areasTableLoaded(i);
+                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                 });
             }
             console.log(depth);
@@ -87,14 +92,16 @@ angular
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let i = 0; i < locationsData.length; i++) {
                 console.log('hello');
-                $('#country' + i).click(() => {
+                $('#country' + locationsData[i].name + locationsData[i].name.length).click(() => {
                     parentCountry = locationsData[i];
+                    parentCountryIndex = i;
                     depth++;
                     $('#countryNameBread').text(locationsData[i].name);
                     $('#countryNameBread').show();
                     unbindCallbacks(locationsData.length);
                     $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
                     statesTableLoaded(i);
+                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                 });
             }
             console.log(depth);
@@ -112,6 +119,19 @@ angular
             for (var i = 0; i < data.length; i++) {
                 data[i].selected = false;
             }
+        }
+
+        listenForSearchEvents = () => {
+            $('#countryFilterTable')
+                .on('search.bs.table', function (e, element) {
+                    if (depth == 0) {
+                        countryTableLoaded();
+                    } else if (depth == 1) {
+                        statesTableLoaded(parentCountryIndex);
+                    } else if (depth == 2) {
+                        areasTableLoaded(parentCountryIndex);
+                    }
+                });
         }
 
         listenForCheckEvents = () => {
@@ -182,6 +202,7 @@ angular
             $('#stateNameBread').hide();
             $('#countryFilterTable').bootstrapTable('load', {'data': locationsData});
             countryTableLoaded();
+            $('#countryFilterTable').bootstrapTable('resetSearch', '');
         });
 
         $http({method: "POST", url: "https://us-central1-dignpick.cloudfunctions.net/api/getAllAds"}).then((response) => {
@@ -201,6 +222,7 @@ angular
                     $('#countryFilterTable').bootstrapTable({data: locationsData});
                     countryTableLoaded();
                     listenForCheckEvents();
+                    listenForSearchEvents();
                     $rootScope.isLoading = false;
                     $rootScope.$digest();
                     $('#manageAdsContainer').show();
@@ -363,8 +385,7 @@ angular
                                 'filter': {}
                             }
 
-                            if (modalMode == 'manage')
-                            {
+                            if (modalMode == 'manage') {
                                 adObj['uid'] = data[manageIndex].uid;
                             }
 
@@ -385,7 +406,9 @@ angular
                                 adObj.filter['location'] = locationsData;
                             }
 
-                            $('#createAdModalSubmitBtn').val(modalMode == 'manage' ? 'Update' : 'Add');
+                            $('#createAdModalSubmitBtn').val(modalMode == 'manage'
+                                ? 'Update'
+                                : 'Add');
                             $('#createAdModalSubmitBtn').removeAttr("disabled");
                             $('#createAdModalDismissBtn').removeAttr("disabled");
                             $('#createAdModalCloseBtn').removeAttr("disabled");
@@ -446,7 +469,9 @@ angular
 
                         })
                         .catch((error) => {
-                            $('#createAdModalSubmitBtn').val(modalMode == 'manage' ? 'Update' : 'Add');
+                            $('#createAdModalSubmitBtn').val(modalMode == 'manage'
+                                ? 'Update'
+                                : 'Add');
                             $('#createAdModalSubmitBtn').removeAttr("disabled");
                             $('#createAdModalDismissBtn').removeAttr("disabled");
                             $('#createAdModalCloseBtn').removeAttr("disabled");
@@ -481,7 +506,6 @@ angular
                         'uid': data[manageIndex].uid,
                         'filter': {}
                     }
-
 
                     if ($scope.maleGenderFilter && !$scope.femaleGenderFilter) {
                         adObj.filter['gender'] = 'male';
@@ -629,8 +653,8 @@ angular
             }
         }
 
-        loadDataIntoModal = (uid) => {
-            var index = getIndexFromUID(data, uid);
+        loadDataIntoModal = (index) => {
+            console.log(data[index]);
             $scope.adTitle = data[index].title;
             $scope.adType = data[index].type;
             console.log(data[index].from);
@@ -677,7 +701,9 @@ angular
         }
 
         $scope.manageAd = (uid) => {
+            console.log('getting index from uid: ' + uid);
             var index = getIndexFromUID(data, uid);
+            console.log('result is ' + index);
             manageIndex = index;
             console.log(data[index]);
             changeModalMode('manage');
@@ -700,6 +726,7 @@ angular
         }
 
         formatManageButton = (value, row, index, field) => {
+            console.log(row.uid);
             return '<button onclick="angular.element(this).scope().manageAd(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Manage</button>'
         }
 
@@ -708,7 +735,7 @@ angular
         })
 
         formatExpandCountry = (value, row, index, field) => {
-            return '<span class="countryExpand" id="country' + index + '">Expand &crarr;</span>'
+            return '<span class="countryExpand" id="country' + row.name + row.name.length + '">Expand &crarr;</span>'
         }
 
         formatSelectPlace = (value, row, index, field) => {

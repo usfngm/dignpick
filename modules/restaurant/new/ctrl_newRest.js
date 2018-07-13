@@ -13,49 +13,49 @@ angular
         $scope.rest_tags = [];
         $scope.rest_types = [];
 
-        $scope.restOutdoorsTag = false;
-        $scope.restAtHomeTag = false;
-        $scope.restShishaTag = false;
-        $scope.restIndoorsTag = false;
-        $scope.restFoodTag = false;
-        $scope.restDateTag = false;
-        $scope.restActivityTag = false;
-        $scope.restReadTag = false;
-        $scope.restWifiTag = false;
-        $scope.restNightLifeTag = false;
-
         loadAllData = async function () {
-            let tags = await db.collection('tags').get();
+            let tags = await db
+                .collection('tags')
+                .get();
             tags.forEach((tag) => {
                 var tempTag = tag.data();
                 tempTag['uid'] = tag.id;
-                $scope.rest_tags.push(tempTag);
+                $scope[tempTag.name + 'Tag'] = false;
+                tempTag['selected'] = false;
+                $scope
+                    .rest_tags
+                    .push(tempTag);
             });
-            let types = await db.collection('restaurant_types').get();
+            let types = await db
+                .collection('restaurant_types')
+                .get();
             types.forEach((type) => {
                 var tempType = type.data();
                 tempType['uid'] = type.id;
-                $scope.rest_types.push(tempType);
+                $scope
+                    .rest_types
+                    .push(tempType);
             });
         }
 
         $rootScope.isLoading = true;
-        (async () => {
+        (async() => {
             await loadAllData();
             $rootScope.isLoading = false;
+            $scope.$digest();
             $rootScope.$digest();
             //$scope.restFoodType = rest_types[0].name;
         })()
 
         const searchMap = (query, token, cb, error) => {
             $http({
-                method: "POST",
-                url: "https://us-central1-dignpick.cloudfunctions.net/api/searchPlaces",
-                data: {
-                    'query': query,
-                    'token': token
-                }
-            })
+                    method: "POST",
+                    url: "https://us-central1-dignpick.cloudfunctions.net/api/searchPlaces",
+                    data: {
+                        'query': query,
+                        'token': token
+                    }
+                })
                 .then(function mySuccess(response) {
                     console.log(response);
                     var places = JSON
@@ -115,7 +115,7 @@ angular
             map.panTo(places_array[index].geometry.location);
             marker = new google
                 .maps
-                .Marker({ position: places_array[index].geometry.location, map: map });
+                .Marker({position: places_array[index].geometry.location, map: map});
             map.setZoom(14);
         }
 
@@ -127,7 +127,7 @@ angular
             map.panTo(branches_list[index].geometry);
             marker = new google
                 .maps
-                .Marker({ position: branches_list[index].geometry, map: map });
+                .Marker({position: branches_list[index].geometry, map: map});
             map.setZoom(14);
         }
 
@@ -212,26 +212,21 @@ angular
 
         $scope.submit = () => {
             $rootScope.isLoading = true;
+            var obj = {
+                name: $scope.restName,
+                description: $scope.restDescription,
+                foodType: $scope.restFoodType,
+                hotline: $scope.restHotline,
+                tags: {}
+            }
+
+            $scope.rest_tags.forEach((tag) => {
+                obj.tags[tag.name] = tag.selected;
+            });
+
             db
                 .collection("places")
-                .add({
-                    name: $scope.restName,
-                    description: $scope.restDescription,
-                    foodType: $scope.restFoodType,
-                    hotline: $scope.restHotline,
-                    tags: {
-                        outdoors: $scope.restOutdoorsTag,
-                        atHome: $scope.restAtHomeTag,
-                        shisha: $scope.restShishaTag,
-                        indoors: $scope.restIndoorsTag,
-                        food: $scope.restFoodTag,
-                        date: $scope.restDateTag,
-                        activity: $scope.restActivityTag,
-                        read: $scope.restReadTag,
-                        wifi: $scope.restWifiTag,
-                        nightLife: $scope.restNightLifeTag
-                    }
-                })
+                .add(obj)
                 .then(function (docRef) {
                     addBranches(docRef.id);
                 })
@@ -257,7 +252,7 @@ angular
             db
                 .collection("branches")
                 .doc(id)
-                .set({ 'branches': branches_list })
+                .set({'branches': branches_list})
                 .then(function () {
                     console.log("Document successfully written!");
                     $rootScope.isLoading = false;
@@ -289,7 +284,7 @@ angular
         }
         $timeout(function () {
             init_map();
-            $('#mapSearchtable').bootstrapTable({ data: table_data });
-            $('#branchesList').bootstrapTable({ data: branches_list });
+            $('#mapSearchtable').bootstrapTable({data: table_data});
+            $('#branchesList').bootstrapTable({data: branches_list});
         });
     });

@@ -34,48 +34,9 @@
             </div>
             <h4 class="subRestFormTitle">Restaurant Main Tags:</h4>
 
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restOutdoorsTag" type="checkbox" id="inlineCheckbox1" value="option1">
-                <label class="form-check-label" for="inlineCheckbox1">Outdoors</label>
-            </div>
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restAtHomeTag" type="checkbox" id="inlineCheckbox2" value="option2">
-                <label class="form-check-label" for="inlineCheckbox2">At Home</label>
-            </div>
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restShishaTag" type="checkbox" id="inlineCheckbox3" value="option3">
-                <label class="form-check-label" for="inlineCheckbox3">SHISHA</label>
-            </div>
-
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restIndoorsTag" type="checkbox" id="inlineCheckbox1" value="option1">
-                <label class="form-check-label" for="inlineCheckbox1">Indoors</label>
-            </div>
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restFoodTag" type="checkbox" id="inlineCheckbox2" value="option2">
-                <label class="form-check-label" for="inlineCheckbox2">Food</label>
-            </div>
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restDateTag" type="checkbox" id="inlineCheckbox3" value="option3">
-                <label class="form-check-label" for="inlineCheckbox3">Date</label>
-            </div>
-
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restActivityTag" type="checkbox" id="inlineCheckbox1" value="option1">
-                <label class="form-check-label" for="inlineCheckbox1">Activity</label>
-            </div>
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restReadTag" type="checkbox" id="inlineCheckbox2" value="option2">
-                <label class="form-check-label" for="inlineCheckbox2">Read</label>
-            </div>
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restWifiTag" type="checkbox" id="inlineCheckbox3" value="option3">
-                <label class="form-check-label" for="inlineCheckbox3">Wifi</label>
-            </div>
-
-            <div class="form-check form-check-inline col-md-3 tags-check-container">
-                <input class="form-check-input" ng-model="restNightLifeTag" type="checkbox" id="inlineCheckbox3" value="option3">
-                <label class="form-check-label" for="inlineCheckbox3">Night Life</label>
+            <div ng-repeat="tag in rest_tags" class="form-check form-check-inline col-md-3 tags-check-container">
+                <input ng-change="opps()" class="form-check-input" ng-model='tag["selected"]' type="checkbox" id="{{tag.name + $index}}">
+                <label class="form-check-label" for="{{tag.name + $index}}">{{tag.name}}</label>
             </div>
 
             <h4 class="subRestFormTitle">Restaurant Branches:</h4>

@@ -27,6 +27,19 @@ angular
             }
         }
 
+        listenForSearchEvents = () => {
+            $('#countryFilterTable')
+                .on('search.bs.table', function (e, element) {
+                    if (depth == 0) {
+                        countryTableLoaded();
+                    } else if (depth == 1) {
+                        statesTableLoaded(parentCountryIndex);
+                    } else if (depth == 2) {
+                        areasTableLoaded(parentCountryIndex);
+                    }
+                });
+        }
+
         areasTableLoaded = (i) => {
             $('#countryFilterTable').bootstrapTable('hideColumn', 'expandBtn');
             $('#countryNameBread').unbind('click');
@@ -35,17 +48,18 @@ angular
                 $('#stateNameBread').hide();
                 $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
                 statesTableLoaded(i);
+                $('#countryFilterTable').bootstrapTable('resetSearch', '');
             })
             console.log(depth);
             console.log('PARENT COUNTRY = ' + parentCountry.name);
             console.log('PARENT STATE = ' + parentState.name);
             $('#newBtn').text('New Area');
         }
-        
+
         statesTableLoaded = (i) => {
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let j = 0; j < locationsData[i].states.length; j++) {
-                $('#country' + j).click(() => {
+                $('#country' + locationsData[i].states[j].name + locationsData[i].states[j].name.length).click(() => {
                     parentState = locationsData[i].states[j];
                     parentStateIndex = j;
                     depth++;
@@ -54,6 +68,7 @@ angular
                     unbindCallbacks(locationsData[i].states.length);
                     $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states[j].areas});
                     areasTableLoaded(i);
+                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                 });
             }
             console.log(depth);
@@ -64,7 +79,7 @@ angular
             $('#countryFilterTable').bootstrapTable('showColumn', 'expandBtn');
             for (let i = 0; i < locationsData.length; i++) {
                 console.log('hello');
-                $('#country' + i).click(() => {
+                $('#country' + locationsData[i].name + locationsData[i].name.length).click(() => {
                     parentCountry = locationsData[i];
                     parentCountryIndex = i;
                     depth++;
@@ -73,6 +88,7 @@ angular
                     unbindCallbacks(locationsData.length);
                     $('#countryFilterTable').bootstrapTable('load', {'data': locationsData[i].states});
                     statesTableLoaded(i);
+                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                 });
             }
             console.log(depth);
@@ -85,6 +101,7 @@ angular
             $('#stateNameBread').hide();
             $('#countryFilterTable').bootstrapTable('load', {'data': locationsData});
             countryTableLoaded();
+            $('#countryFilterTable').bootstrapTable('resetSearch', '');
         });
 
         db
@@ -99,6 +116,7 @@ angular
                 console.log(locationsData);
                 $('#countryFilterTable').bootstrapTable({data: locationsData});
                 countryTableLoaded();
+                listenForSearchEvents();
                 $rootScope.isLoading = false;
                 $rootScope.$digest();
                 $('#locationSettingsContainer').show();
@@ -113,18 +131,31 @@ angular
         }
 
         formatEditButton = (value, row, index, field) => {
+            if (depth == 1) {
+                parentCountry.states[index].uid = parentCountry.states[index].name + Date.now();
+            } else if (depth == 2) {
+                parentCountry.states[parentStateIndex].areas[index].uid = parentCountry.states[parentStateIndex].areas[index].name + Date.now();
+            }
             return '<button onclick="angular.element(this).scope().editLocation(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Edit</button>'
+
         }
 
         formatDeleteButton = (value, row, index, field) => {
+            if (depth == 1) {
+                parentCountry.states[index].uid = parentCountry.states[index].name + Date.now();
+            } else if (depth == 2) {
+                parentCountry.states[parentStateIndex].areas[index].uid = parentCountry.states[parentStateIndex].areas[index].name + Date.now();
+            }
             return '<button onclick="angular.element(this).scope().deleteLocation(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
         $scope.editLocation = (uid) => {
-            var index = getIndexFromUID(locationsData, uid);
+
             mode = 'edit';
-            editIndex = index;
+
             if (depth == 0) {
+                var index = getIndexFromUID(locationsData, uid);
+                editIndex = index;
                 $('#createLocationItemModalTitle').text('Edit Country');
                 $('#createLocationItemLabel').text('Country Name');
                 $('#createLocationItemInput').attr('placeholder', 'Country Name (Ex. Egypt)');
@@ -132,6 +163,8 @@ angular
                 $scope.locationName = locationsData[index].name;
                 $scope.$digest();
             } else if (depth == 1) {
+                var index = getIndexFromUID(parentCountry.states, uid);
+                editIndex = index;
                 $('#createLocationItemModalTitle').text('Edit Province');
                 $('#createLocationItemLabel').text('Province Name');
                 $('#createLocationItemInput').attr('placeholder', 'Province Name (Ex. Cairo)');
@@ -139,6 +172,8 @@ angular
                 $scope.locationName = parentCountry.states[index].name;
                 $scope.$digest();
             } else if (depth == 2) {
+                var index = getIndexFromUID(parentState.areas, uid);
+                editIndex = index;
                 $('#createLocationItemModalTitle').text('Edit Area');
                 $('#createLocationItemLabel').text('Area Name');
                 $('#createLocationItemInput').attr('placeholder', 'Area Name (Ex. Nasr City)');
@@ -150,8 +185,8 @@ angular
         }
 
         $scope.deleteLocation = (uid) => {
-            var index = getIndexFromUID(locationsData, uid);
             if (depth == 0) {
+                var index = getIndexFromUID(locationsData, uid);
                 bootbox.confirm({
                     message: "Are you sure you want to delete '" + locationsData[index].name + "'?",
                     buttons: {
@@ -179,6 +214,7 @@ angular
                                     $rootScope.isLoading = false;
                                     $rootScope.$digest();
                                     toastr.success('Location Deleted');
+                                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                                 })
                                 .catch((error) => {
                                     $rootScope.isLoading = false;
@@ -189,6 +225,7 @@ angular
                     }
                 });
             } else if (depth == 1) {
+                var index = getIndexFromUID(parentCountry.states, uid);
                 bootbox.confirm({
                     message: "Are you sure you want to delete '" + parentCountry.states[index].name + "'?",
                     buttons: {
@@ -222,6 +259,7 @@ angular
                                     $rootScope.isLoading = false;
                                     $rootScope.$digest();
                                     toastr.success('Location Deleted');
+                                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                                 })
                                 .catch((error) => {
                                     $rootScope.isLoading = false;
@@ -233,6 +271,7 @@ angular
                     }
                 });
             } else if (depth == 2) {
+                var index = getIndexFromUID(parentState.areas, uid);
                 bootbox.confirm({
                     message: "Are you sure you want to delete '" + parentState.areas[index].name + "'?",
                     buttons: {
@@ -268,6 +307,7 @@ angular
                                     $rootScope.isLoading = false;
                                     $rootScope.$digest();
                                     toastr.success('Location Deleted');
+                                    $('#countryFilterTable').bootstrapTable('resetSearch', '');
                                 })
                                 .catch((error) => {
                                     $rootScope.isLoading = false;
@@ -281,7 +321,7 @@ angular
         }
 
         formatExpandCountry = (value, row, index, field) => {
-            return '<span class="countryExpand" id="country' + index + '">Expand &crarr;</span>'
+            return '<span class="countryExpand" id="country' + row.name + row.name.length + '">Expand &crarr;</span>'
         }
 
         $scope.newItem = () => {
@@ -348,6 +388,7 @@ angular
                             $rootScope.isLoading = false;
                             $rootScope.$digest();
                             toastr.success('Country Updated');
+                            $('#countryFilterTable').bootstrapTable('resetSearch', '');
                         })
                         .catch((error) => {
                             $rootScope.isLoading = false;
@@ -400,6 +441,7 @@ angular
                             $rootScope.isLoading = false;
                             $rootScope.$digest();
                             toastr.success('Province Updated');
+                            $('#countryFilterTable').bootstrapTable('resetSearch', '');
                         })
                         .catch((error) => {
                             $rootScope.isLoading = false;
@@ -452,6 +494,7 @@ angular
                             $rootScope.isLoading = false;
                             $rootScope.$digest();
                             toastr.success('Area Updated');
+                            $('#countryFilterTable').bootstrapTable('resetSearch', '');
                         })
                         .catch((error) => {
                             $rootScope.isLoading = false;

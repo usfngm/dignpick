@@ -8,6 +8,66 @@ angular
         console.log('EDIT ' + $scope.uid);
         $('#editRestContainer').hide();
         $('#editRestContainerBack').hide();
+        $scope.rest_tags = [];
+        $scope.rest_types = [];
+        var map;
+        var marker;
+        var places_array = [];
+        var table_data = [];
+        var branches_list = [];
+
+        loadAllData = async function () {
+            let tags = await db
+                .collection('tags')
+                .get();
+            tags.forEach((tag) => {
+                var tempTag = tag.data();
+                tempTag['uid'] = tag.id;
+                $scope[tempTag.name + 'Tag'] = false;
+                tempTag['selected'] = false;
+                $scope
+                    .rest_tags
+                    .push(tempTag);
+            });
+
+            let types = await db
+                .collection('restaurant_types')
+                .get();
+            types.forEach((type) => {
+                var tempType = type.data();
+                tempType['uid'] = type.id;
+                $scope
+                    .rest_types
+                    .push(tempType);
+            });
+
+            let restaurant = await db
+                .collection("places")
+                .doc($scope.uid)
+                .get();
+
+            setRestData(restaurant.data());
+
+            let branches = await db
+                .collection("branches")
+                .doc($scope.uid)
+                .get();
+
+            branches_list = branches
+                .data()
+                .branches;
+            fillBranchsTable();
+        }
+
+        $rootScope.isLoading = true;
+        (async() => {
+            await loadAllData();
+            $rootScope.isLoading = false;
+            $scope.$digest();
+            $rootScope.$digest();
+            $('#editRestContainer').show();
+            $('#editRestContainerBack').show();
+        })()
 
         const fillBranchsTable = () => {
             $('#branchesList').bootstrapTable('removeAll');
@@ -15,100 +75,27 @@ angular
             console.log(branches_list);
         }
 
+        const checkTag = (tag) => {
+            for (var i = 0; i < $scope.rest_tags.length; i++) {
+                if ($scope.rest_tags[i].name == tag) 
+                    $scope.rest_tags[i].selected = true;
+                }
+            }
+
         const setRestData = (data) => {
+            console.log(data);
             $scope.restName = data.name;
             $scope.restDescription = data.description;
             $scope.restFoodType = data.foodType;
             $scope.restHotline = data.hotline;
-            $scope.restActivityTag = data.tags.activity;
-            $scope.restAtHomeTag = data.tags.atHome;
-            $scope.restDateTag = data.tags.date;
-            $scope.restFoodTag = data.tags.food;
-            $scope.restIndoorsTag = data.tags.indoors;
-            $scope.restNightLifeTag = data.tags.nightLife;
-            $scope.restOutdoorsTag = data.tags.outdoors;
-            $scope.restReadTag = data.tags.read;
-            $scope.restShishaTag = data.tags.shisha;
-            $scope.restWifiTag = data.tags.wifi;
-        }
-
-        const loadRestBranches = () => {
-            var docRef = db
-                .collection("branches")
-                .doc($scope.uid);
-            docRef
-                .get()
-                .then(function (doc) {
-                    if (doc.exists) {
-                        branches_list = doc
-                            .data()
-                            .branches;
-                        fillBranchsTable();
-                        $rootScope.isLoading = false;
-                        $rootScope.$digest();
-                        $('#editRestContainer').show();
-                        $('#editRestContainerBack').show();
-                    } else {
-                        console.log("No branches");
-                        $rootScope.isLoading = false;
-                        $rootScope.$digest();
-                        $('#editRestContainer').show();
-                        $('#editRestContainerBack').show();
+            Object
+                .keys(data.tags)
+                .forEach(function (key) {
+                    if (data.tags[key]) {
+                        checkTag(key);
                     }
-                })
-                .catch(function (error) {
-                    console.log("Error getting document:", error);
-                    $rootScope.isLoading = false;
-                    $rootScope.$digest();
                 });
         }
-
-        const loadRestData = () => {
-            var docRef = db
-                .collection("places")
-                .doc($scope.uid);
-            docRef
-                .get()
-                .then(function (doc) {
-                    if (doc.exists) {
-                        console.log('FOUND REST DATA');
-                        setRestData(doc.data());
-                        loadRestBranches();
-                    } else {
-                        $rootScope.isLoading = false;
-                        $rootScope.$digest();
-                        $state.go('manageRest');
-                        console.log("No such document!");
-                    }
-                })
-                .catch(function (error) {
-                    console.log("Error getting document:", error);
-                    $rootScope.isLoading = false;
-                    $rootScope.$digest();
-                });
-        }
-
-        $rootScope.isLoading = true;
-        loadRestData();
-
-        var map;
-        var marker;
-
-        var places_array = [];
-        var table_data = [];
-
-        var branches_list = [];
-
-        $scope.restOutdoorsTag = false;
-        $scope.restAtHomeTag = false;
-        $scope.restShishaTag = false;
-        $scope.restIndoorsTag = false;
-        $scope.restFoodTag = false;
-        $scope.restDateTag = false;
-        $scope.restActivityTag = false;
-        $scope.restReadTag = false;
-        $scope.restWifiTag = false;
-        $scope.restNightLifeTag = false;
 
         const searchMap = (query, token, cb, error) => {
             $http({
@@ -266,27 +253,23 @@ angular
 
         $scope.submit = () => {
             $rootScope.isLoading = true;
+
+            var obj ={
+                name: $scope.restName,
+                description: $scope.restDescription,
+                foodType: $scope.restFoodType,
+                hotline: $scope.restHotline,
+                tags: {}
+            }
+
+            $scope.rest_tags.forEach((tag) => {
+                obj.tags[tag.name] = tag.selected;
+            });
+
             db
                 .collection("places")
                 .doc($scope.uid)
-                .set({
-                    name: $scope.restName,
-                    description: $scope.restDescription,
-                    foodType: $scope.restFoodType,
-                    hotline: $scope.restHotline,
-                    tags: {
-                        outdoors: $scope.restOutdoorsTag,
-                        atHome: $scope.restAtHomeTag,
-                        shisha: $scope.restShishaTag,
-                        indoors: $scope.restIndoorsTag,
-                        food: $scope.restFoodTag,
-                        date: $scope.restDateTag,
-                        activity: $scope.restActivityTag,
-                        read: $scope.restReadTag,
-                        wifi: $scope.restWifiTag,
-                        nightLife: $scope.restNightLifeTag
-                    }
-                })
+                .set(obj)
                 .then(function (docRef) {
                     addBranches();
                 })

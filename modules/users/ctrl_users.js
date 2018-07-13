@@ -31,15 +31,13 @@ angular
                 $('#manageUsersContainer').show();
             });
 
-        $scope.manageUser = (index) => {
-            console.log('manage user ' + data[index].name);
-        }
-
-        $scope.manageUser = (index) => {
+        $scope.manageUser = (uid) => {
+            var index = getIndexFromUID(data, uid);
             $state.go('manageUser', { 'userID': data[index].uid });
         }
 
-        $scope.deleteUser = (index) => {
+        $scope.deleteUser = (uid) => {
+            var index = getIndexFromUID(data, uid);
             toastr.options = {
                 "positionClass": "toast-bottom-right"
             };
@@ -87,11 +85,11 @@ angular
         }
 
         formatManageButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().manageUser(' + index + ')" type="button" class="btn btn-primary">Manage</button>'
+            return '<button onclick="angular.element(this).scope().manageUser(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-primary">Manage</button>'
         }
 
         formatDeleteButton = (value, row, index, field) => {
-            return '<button onclick="angular.element(this).scope().deleteUser(' + index + ')" type="button" class="btn btn-danger">Delete</button>'
+            return '<button onclick="angular.element(this).scope().deleteUser(&quot;' + row.uid + '&quot;)" type="button" class="btn btn-danger">Delete</button>'
         }
 
         $scope.createUser = () => {
