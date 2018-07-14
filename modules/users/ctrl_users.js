@@ -2,6 +2,7 @@ angular
     .module("digAPP")
     .controller('usersCtrl', function ($scope, $rootScope, $state, $http, $window) {
         $('#manageUsersContainer').hide();
+        $scope.userLevel = 'User';
         $scope.isWrong = false;
         var data = [];
         var docRef = db.collection('users');
@@ -12,7 +13,7 @@ angular
                 var i = 1;
                 querySnapshot.forEach(function (doc) {
                     // doc.data() is never undefined for query doc snapshots
-                    var place = {
+                    var user = {
                         'uid': doc.data().uid,
                         'name': doc
                             .data()
@@ -20,9 +21,9 @@ angular
                         'email': doc.data().email,
                         'city': doc.data().city,
                         'mobile': doc.data().mobile,
-                        'delete': '<button type="button" class="btn btn-danger">Delete</button>'
-                    };
-                    data.push(place);
+                        'level': doc.data().level
+                  };
+                    data.push(user);
                     i++;
                 });
                 $('#manageUsersTable').bootstrapTable({ data: data });
@@ -101,7 +102,8 @@ angular
                 'password': $scope.userPassword,
                 'mobile': $scope.userMobile,
                 'city': $scope.userCity,
-                'country': $scope.userCountry
+                'country': $scope.userCountry,
+                'level': $scope.userLevel
             };
 
             $http({
@@ -122,6 +124,7 @@ angular
                 $scope.userCity = '';
                 $scope.userMobile = '';
                 $scope.userCountry = '';
+                $scope.userLevel = 'User';
             }, function myError(response) {
                 $rootScope.isLoading = false;
                 console.log(response.data);

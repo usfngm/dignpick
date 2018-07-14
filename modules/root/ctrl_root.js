@@ -5,11 +5,12 @@ angular
             "positionClass": "toast-bottom-right"
         };
         getIndexFromUID = (arr, uid) => {
-            for ( var i = 0; i < arr.length; i++ )
-            {
-                if (arr[i].uid == uid) return i;
-                if (arr[i].id == uid) return i;
-            }
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i].uid == uid) 
+                    return i;
+                if (arr[i].id == uid) 
+                    return i;
+                }
             return -1;
         }
         firebase
@@ -26,16 +27,30 @@ angular
                         docRef
                             .get()
                             .then(function (doc) {
-                                if (doc.exists) {
-                                    $window.sessionStorage.user = JSON.stringify(doc.data());
-                                    $rootScope.isLoading = false;
-                                    $rootScope.$digest();
-                                    $state.go('manageRest');
+                                if (doc.data().level == 'Admin') {
+                                    if (doc.exists) {
+                                        $window.sessionStorage.user = JSON.stringify(doc.data());
+                                        $rootScope.isLoading = false;
+                                        $rootScope.$digest();
+                                        $state.go('manageRest');
+                                    } else {
+                                        firebase
+                                            .auth()
+                                            .signOut();
+                                        $window.sessionStorage.user = '';
+                                        $rootScope.isLoading = false;
+                                        $rootScope.$digest();
+                                        $state.go('login');
+                                    }
                                 } else {
+                                    firebase
+                                        .auth()
+                                        .signOut();
                                     $window.sessionStorage.user = '';
                                     $rootScope.isLoading = false;
                                     $rootScope.$digest();
                                     $state.go('login');
+                                    toastr.error("Access Denied");
                                 }
                             })
                             .catch(function (error) {

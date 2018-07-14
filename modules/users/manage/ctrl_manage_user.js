@@ -22,7 +22,7 @@ angular
                     $scope.userMobile = user.mobile;
                     $scope.userCountry = user.country;
                     $scope.userCity = user.city;
-
+                    $scope.userLevel = user.level;
                     $rootScope.isLoading = false;
                     $rootScope.$digest();
                     $('#manageSingleUserContainer').show();
@@ -53,6 +53,7 @@ angular
             user['mobile'] = $scope.userMobile;
             user['city'] = $scope.userCity;
             user['country'] = $scope.userCountry;
+            user['level'] = $scope.userLevel;
 
             var docRef = db
                 .collection("users")

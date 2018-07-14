@@ -8,8 +8,7 @@
                     <th data-formatter="formatIDCount">#</th>
                     <th data-field="name">Name</th>
                     <th data-field="email">Email</th>
-                    <th data-field="city">City</th>
-                    <th data-field="mobile">Mobile</th>
+                    <th data-field="level">Level</th>
                     <th data-formatter="formatManageButton">Manage User</th>
                     <th data-formatter="formatDeleteButton">Delete User</th>
                 </tr>
@@ -36,6 +35,15 @@
                 <div class="form-group col-md-12">
                     <label>Password*</label>
                     <input class="form-control" type="password" ng-model="userPassword" placeholder="Password" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>User Privileges</label>
+                    <select ng-model="userLevel" class="form-control">
+                        <option value='User'>User</option>
+                        <option value='Admin'>Admin</option>
+                    </select>
                 </div>
             </div>
             <div class="form-row">
