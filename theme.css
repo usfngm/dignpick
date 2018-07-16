@@ -196,3 +196,38 @@ body, html {
     -ms-user-select: none;      /* IE 10+ */
     user-select: none;          /* Likely future */     
 }
+
+#galleryBigContainer {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 300px;
+    max-height: 480px;
+    -webkit-box-shadow: inset 0px 0px 6px -1px rgba(0,0,0,0.42);
+    -moz-box-shadow: inset 0px 0px 6px -1px rgba(0,0,0,0.42);
+    box-shadow: inset 0px 0px 6px -1px rgba(0,0,0,0.42);
+    overflow-y: scroll;
+}
+
+#galleryAddContainer {
+    height: 200px;
+    width: 200px;
+    margin: 20px;
+    background-color: #d1d1d1;
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+#galleryAddContainer:hover {
+    background-color: #c0c0c0;
+    transition: 0.5s;
+}
+
+#galleryAddDefault {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}

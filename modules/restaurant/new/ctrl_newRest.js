@@ -2,12 +2,56 @@ angular
     .module("digAPP")
     .controller('newRestCtrl', function ($scope, $rootScope, $state, $window, $timeout, $http) {
         //JQUERY VARS
-        var file;
+        var coverPhotoFile;
+        var currentGalleryFile;
         var storageRef = firebase
-        .storage()
-        .ref();
+            .storage()
+            .ref();
         var coverPhotoLoc;
         var coverPhotoUploadTask;
+        $scope.galleryPhotos = [];
+
+        $('#galleryAddContainer').click(() => {
+            $('#galleryUpload').click();
+        });
+
+        const startGalleryUpload = (obj) => {
+            
+        }
+
+        $('#galleryUpload').change(function (ev) {
+            var _URL = window.URL || window.webkitURL;
+            currentGalleryFile = document
+                .getElementById('galleryUpload')
+                .files[0];
+            if (currentGalleryFile) {
+                if (!currentGalleryFile.type.includes("image")) {
+                    alert("Unsupported format, please try again.")
+                    currentGalleryFile = null;
+                } else {
+                    var image = new Image();
+                    image.src = _URL.createObjectURL(currentGalleryFile);
+                    image.onload = function () {
+                        var aspect_ratio = image.width / image.height;
+                        if (aspect_ratio != 1) {
+                            alert('Image size must be 1200 x 1200 or must have 1:1 aspect ratio (Square Image). Please select anot' +
+                                    'her image and try again.');
+                            currentGalleryFile = null;
+                        } else {
+                            var obj = {
+                                'file': JSON.parse(JSON.stringify(currentGalleryFile)),
+                                'finished': false,
+                                'progress': 0,
+                                'fileLoc': null,
+                                'downloadURL': null
+                            }
+                            $scope.galleryPhotos.push(obj);
+                            startGalleryUpload(obj);
+                        }
+                    };
+                }
+            }
+        });
 
         var dotCount = 1;
         setInterval(function () {
@@ -20,7 +64,6 @@ angular
                 dotCount = 0;
             }
             dotCount++;
-
         }, 500);
 
         //JQUERY
@@ -57,7 +100,7 @@ angular
             $('#coverPhotoContentUploadingContent').hide();
             coverPhotoLoc = null;
             coverPhotoUploadTask = null;
-            file = null;
+            coverPhotoFile = null;
             setTimeout(listenForCoverPhotoUploadEvents, 100);
         });
 
@@ -70,9 +113,7 @@ angular
         const coverPhotoUploadFinished = () => {
             $('#uploadingTextPercentage').text("Upload Completed");
             $('#uploadingTextSpan').hide();
-            $('#coverPhotoContentUploading').animate({
-                'opacity': 0.8
-            });
+            $('#coverPhotoContentUploading').animate({'opacity': 0.8});
         }
 
         const startCoverPhotoUpload = (f) => {
@@ -128,22 +169,22 @@ angular
         $('#coverPhotoUpload')
             .change(function (ev) {
                 var _URL = window.URL || window.webkitURL;
-                file = document
+                coverPhotoFile = document
                     .getElementById('coverPhotoUpload')
                     .files[0];
-                if (file) {
-                    if (!file.type.includes("image")) {
+                if (coverPhotoFile) {
+                    if (!coverPhotoFile.type.includes("image")) {
                         alert("Unsupported format, please try again.")
-                        file = null;
+                        coverPhotoFile = null;
                     } else {
                         var image = new Image();
-                        image.src = _URL.createObjectURL(file);
+                        image.src = _URL.createObjectURL(coverPhotoFile);
                         image.onload = function () {
                             var aspect_ratio = image.width / image.height;
                             if (aspect_ratio != 2) {
                                 alert('Image size must be 1200 x 600 or must have 2:1 aspect ratio.\nPlease select anot' +
                                         'her image and try again.');
-                                file = null;
+                                coverPhotoFile = null;
                                 $scope.coverPhotoError = true;
                                 $scope.$digest();
                             } else {
@@ -162,7 +203,7 @@ angular
                                 $('#coverPhotoContainer').removeClass('pointerCrusor');
                                 $('#coverPhotoContentUploadingContent').show();
                                 $('#coverPhotoContentUploadingContent').css('display', 'flex');
-                                startCoverPhotoUpload(file);
+                                startCoverPhotoUpload(coverPhotoFile);
                             }
                         };
                     }
