@@ -1,8 +1,174 @@
-//Helper methods
-
 angular
     .module("digAPP")
     .controller('newRestCtrl', function ($scope, $rootScope, $state, $window, $timeout, $http) {
+        //JQUERY VARS
+        var file;
+        var storageRef = firebase
+        .storage()
+        .ref();
+        var coverPhotoLoc;
+        var coverPhotoUploadTask;
+
+        var dotCount = 1;
+        setInterval(function () {
+            if (dotCount == 1) {
+                $('#uploadingTextSpan').text('Uploading.');
+            } else if (dotCount == 2) {
+                $('#uploadingTextSpan').text('Uploading..');
+            } else if (dotCount == 3) {
+                $('#uploadingTextSpan').text('Uploading...');
+                dotCount = 0;
+            }
+            dotCount++;
+
+        }, 500);
+
+        //JQUERY
+        const listenForCoverPhotoUploadEvents = () => {
+            $('#coverPhotoContainer').click(() => {
+                $('#coverPhotoUpload').click();
+            })
+
+            $('#coverPhotoContainer').mouseenter(() => {
+                $('#coverPhotoContentDefault').hide();
+                $('#coverPhotoContentHover').show();
+                $('#coverPhotoContentHover').css('display', 'flex');
+            });
+
+            $('#coverPhotoContainer').mouseleave(() => {
+                $('#coverPhotoContentHover').hide();
+                $('#coverPhotoContentDefault').show();
+            });
+        }
+
+        const stopListeningForCoverPhotoUploadEvents = () => {
+            $('#coverPhotoContainer').unbind('mouseleave');
+            $('#coverPhotoContainer').unbind('mouseenter');
+            $('#coverPhotoContainer').unbind('click');
+        }
+
+        $('#closeCoverPhotoUploading').click(() => {
+            $("#coverPhotoContainer").css({'background-image': "none"});
+            $('#coverPhotoContentHover').show();
+            $('#coverPhotoContentHover').css('display', 'flex');
+            $('#coverPhotoContentUploading').hide();
+            $('#coverPhotoContainer').addClass('pointerCrusor');
+            $("#coverPhotoUpload").val("");
+            $('#coverPhotoContentUploadingContent').hide();
+            coverPhotoLoc = null;
+            coverPhotoUploadTask = null;
+            file = null;
+            setTimeout(listenForCoverPhotoUploadEvents, 100);
+        });
+
+        listenForCoverPhotoUploadEvents();
+
+        const onProgress = (progress) => {
+            $('#uploadingTextPercentage').text(progress + "%");
+        }
+
+        const coverPhotoUploadFinished = () => {
+            $('#uploadingTextPercentage').text("Upload Completed");
+            $('#uploadingTextSpan').hide();
+            $('#coverPhotoContentUploading').animate({
+                'opacity': 0.8
+            });
+        }
+
+        const startCoverPhotoUpload = (f) => {
+            coverPhotoLoc = 'place_cover_photos/' + f.name + Date.now();
+            coverPhotoUploadTask = storageRef
+                .child(coverPhotoLoc)
+                .put(f);
+
+            // Listen for state changes, errors, and completion of the upload.
+            coverPhotoUploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                    function (snapshot) {
+                // Get task progress, including the number of bytes uploaded and the total
+                // number of bytes to be uploaded
+                var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                console.log('Upload is ' + progress + '% done');
+                onProgress(progress);
+                switch (snapshot.state) {
+                    case firebase.storage.TaskState.PAUSED: // or 'paused'
+                        console.log('Upload is paused');
+                        break;
+                    case firebase.storage.TaskState.RUNNING: // or 'running'
+                        console.log('Upload is running');
+                        break;
+                }
+            }, function (error) {
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                    case 'storage/unauthorized':
+                        // User doesn't have permission to access the object
+                        break;
+
+                    case 'storage/canceled':
+                        // User canceled the upload
+                        break;
+
+                    case 'storage/unknown':
+                        // Unknown error occurred, inspect error.serverResponse
+                        break;
+                }
+            }, function () {
+                // Upload completed successfully, now we can get the download URL
+                coverPhotoUploadTask
+                    .snapshot
+                    .ref
+                    .getDownloadURL()
+                    .then(function (downloadURL) {
+                        coverPhotoUploadFinished();
+                    });
+            });
+        }
+
+        $('#coverPhotoUpload')
+            .change(function (ev) {
+                var _URL = window.URL || window.webkitURL;
+                file = document
+                    .getElementById('coverPhotoUpload')
+                    .files[0];
+                if (file) {
+                    if (!file.type.includes("image")) {
+                        alert("Unsupported format, please try again.")
+                        file = null;
+                    } else {
+                        var image = new Image();
+                        image.src = _URL.createObjectURL(file);
+                        image.onload = function () {
+                            var aspect_ratio = image.width / image.height;
+                            if (aspect_ratio != 2) {
+                                alert('Image size must be 1200 x 600 or must have 2:1 aspect ratio.\nPlease select anot' +
+                                        'her image and try again.');
+                                file = null;
+                                $scope.coverPhotoError = true;
+                                $scope.$digest();
+                            } else {
+                                $('#uploadingTextPercentage').text("0%");
+                                $('#uploadingTextSpan').show();
+                                $('#coverPhotoContentUploading').css('opacity', 0.5);
+                                stopListeningForCoverPhotoUploadEvents();
+                                $scope.coverPhotoError = false;
+                                $scope.$digest();
+                                $("#coverPhotoContainer").css({
+                                    'background-image': "url(" + image.src + ")"
+                                });
+                                $('#coverPhotoContentHover').hide();
+                                $('#coverPhotoContentDefault').hide();
+                                $('#coverPhotoContentUploading').show();
+                                $('#coverPhotoContainer').removeClass('pointerCrusor');
+                                $('#coverPhotoContentUploadingContent').show();
+                                $('#coverPhotoContentUploadingContent').css('display', 'flex');
+                                startCoverPhotoUpload(file);
+                            }
+                        };
+                    }
+                }
+            });
+
         var map;
         var marker;
 
@@ -38,13 +204,14 @@ angular
             });
         }
 
+        $('#newRestContainer').hide();
         $rootScope.isLoading = true;
         (async() => {
             await loadAllData();
             $rootScope.isLoading = false;
             $scope.$digest();
             $rootScope.$digest();
-            //$scope.restFoodType = rest_types[0].name;
+            $('#newRestContainer').show();
         })()
 
         const searchMap = (query, token, cb, error) => {
@@ -220,9 +387,11 @@ angular
                 tags: {}
             }
 
-            $scope.rest_tags.forEach((tag) => {
-                obj.tags[tag.name] = tag.selected;
-            });
+            $scope
+                .rest_tags
+                .forEach((tag) => {
+                    obj.tags[tag.name] = tag.selected;
+                });
 
             db
                 .collection("places")

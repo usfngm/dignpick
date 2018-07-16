@@ -96,9 +96,34 @@
             <div class="form-group col-md-12">
                 <button ng-click="addManualBranch()" class="form-control btn btn-primary">Add to Branch List</button>
             </div>
-
+            <h4 class="subRestFormTitle">Restaurant Media:</h4>
+            <h5>Restaurant Cover Photo</h5>
+            <input type="file" style="display: none;" accept="image/x-png,image/jpeg" id="coverPhotoUpload" />
+            <span ng-show="coverPhotoError" style="color: red; font-weight: bold; margin-bottom: 15px;">*Cover photos must be 1200 x 600 or must have an aspect ratio of 2:1.</span>
+            <div id="coverPhotoContainer" class="pointerCrusor">
+                <div id="coverPhotoContentDefault">
+                    <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="fas fa-cloud-upload-alt"></i>
+                    <span style="color: #727272; text-align: center;">1200 x 600
+                        <br>or
+                        <br>2:1 aspect ratio</span>
+                </div>
+                <div id="coverPhotoContentHover">
+                    <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="fas fa-cloud-upload-alt"></i>
+                    <span style="color: #727272; text-align: center; font-size: 30px;">
+                        Click to Upload
+                    </span>
+                </div>
+                <div id="coverPhotoContentUploading">
+                </div>
+                <div id="coverPhotoContentUploadingContent" style="width: 100%; height: 100%;">
+                    <i id="closeCoverPhotoUploading" class="fas fa-times"></i>
+                    <span id="uploadingTextPercentage" class="uploadingText">0%</span>
+                    <span id="uploadingTextSpan" class="uploadingText">Uploading...</span>
+                </div>
+            </div>
+            <hr>
             <div class="form-group col-md-12">
-                <button ng-click="submit()" class="form-control btn btn-success">Create Restaurant</button>
+                <button ng-click="submit()" class="form-control btn btn-primary">Create Restaurant</button>
             </div>
 
             <div class="form-group col-md-12">
