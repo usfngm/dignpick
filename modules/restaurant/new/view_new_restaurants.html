@@ -6,7 +6,6 @@
     <div id="newRestForm">
         <form>
             <h4 class="subRestFormTitle">Basic Information:</h4>
-
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label>Restaurant Name</label>
@@ -124,6 +123,11 @@
             <h5 style="margin-top: 20px; margin-bottom: 15px;">Restaurant Gallery</h5>
             <input type="file" style="display: none;" accept="image/x-png,image/jpeg" id="galleryUpload" />
             <div id="galleryBigContainer">
+                <!-- <div ng-repeat="photo in galleryPhotos">
+                    <div id="{{photo.id}}" style="background-image: url({{photo.img}});" class="galleryItemContainer">
+
+                    </div>
+                </div> -->
                 <div id="galleryAddContainer">
                     <div id="galleryAddDefault">
                         <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="far fa-plus-square"></i>
@@ -131,7 +135,6 @@
                         <span style="color: #727272; text-align: center; font-size: 10px;">(1200 x 1200 or Square Image)</span>
                     </div>
                 </div>
-
             </div>
             <hr>
             <div class="form-group col-md-12">

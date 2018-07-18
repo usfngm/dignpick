@@ -15,8 +15,59 @@ angular
             $('#galleryUpload').click();
         });
 
+        const onGalleryProgress = (obj, progress) => {
+            obj.progress = progress;
+        }
+
         const startGalleryUpload = (obj) => {
-            
+            var galleryPhotoUpload = storageRef
+                .child(obj.fileLoc)
+                .put(obj.file);
+
+            // Listen for state changes, errors, and completion of the upload.
+            galleryPhotoUpload.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                function (snapshot) {
+                    // Get task progress, including the number of bytes uploaded and the total
+                    // number of bytes to be uploaded
+                    var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    console.log('Upload is ' + progress + '% done');
+                    onGalleryProgress(obj, progress);
+                    switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED: // or 'paused'
+                            console.log('Upload is paused');
+                            break;
+                        case firebase.storage.TaskState.RUNNING: // or 'running'
+                            console.log('Upload is running');
+                            break;
+                    }
+                }, function (error) {
+                    // A full list of error codes is available at
+                    // https://firebase.google.com/docs/storage/web/handle-errors
+                    switch (error.code) {
+                        case 'storage/unauthorized':
+                            // User doesn't have permission to access the object
+                            break;
+
+                        case 'storage/canceled':
+                            // User canceled the upload
+                            break;
+
+                        case 'storage/unknown':
+                            // Unknown error occurred, inspect error.serverResponse
+                            break;
+                    }
+                }, function () {
+                    // Upload completed successfully, now we can get the download URL
+                    coverPhotoUploadTask
+                        .snapshot
+                        .ref
+                        .getDownloadURL()
+                        .then(function (downloadURL) {
+                            coverPhotoUploadFinished();
+                        });
+                });
+
+
         }
 
         $('#galleryUpload').change(function (ev) {
@@ -25,6 +76,7 @@ angular
                 .getElementById('galleryUpload')
                 .files[0];
             if (currentGalleryFile) {
+                console.log(currentGalleryFile);
                 if (!currentGalleryFile.type.includes("image")) {
                     alert("Unsupported format, please try again.")
                     currentGalleryFile = null;
@@ -32,23 +84,34 @@ angular
                     var image = new Image();
                     image.src = _URL.createObjectURL(currentGalleryFile);
                     image.onload = function () {
+                        console.log("IMAGE LOADED");
                         var aspect_ratio = image.width / image.height;
                         if (aspect_ratio != 1) {
                             alert('Image size must be 1200 x 1200 or must have 1:1 aspect ratio (Square Image). Please select anot' +
-                                    'her image and try again.');
+                                'her image and try again.');
                             currentGalleryFile = null;
                         } else {
                             var obj = {
-                                'file': JSON.parse(JSON.stringify(currentGalleryFile)),
+                                'file': currentGalleryFile,
                                 'finished': false,
                                 'progress': 0,
-                                'fileLoc': null,
+                                'img': image.src,
+                                'id': currentGalleryFile.name + Date.now(),
+                                'fileLoc': 'gallery/' + currentGalleryFile.name + Date.now(),
                                 'downloadURL': null
                             }
-                            $scope.galleryPhotos.push(obj);
-                            startGalleryUpload(obj);
+                            console.log(obj.file);
+                            $('#galleryBigContainer').prepend("<h1>HALA YA SHEE5</h1>");
+                            //$scope.galleryPhotos.push(obj);
+                            //$scope.$digest();
+                            //startGalleryUpload(obj);
                         }
                     };
+                    image.onerror = (er) => {
+                        console.log(er);
+                        console.log("ERROR");
+                    };
+                    console.log("IM HERE WAITING FOR IMAGE LOAD");
                 }
             }
         });
@@ -91,7 +154,7 @@ angular
         }
 
         $('#closeCoverPhotoUploading').click(() => {
-            $("#coverPhotoContainer").css({'background-image': "none"});
+            $("#coverPhotoContainer").css({ 'background-image': "none" });
             $('#coverPhotoContentHover').show();
             $('#coverPhotoContentHover').css('display', 'flex');
             $('#coverPhotoContentUploading').hide();
@@ -113,7 +176,7 @@ angular
         const coverPhotoUploadFinished = () => {
             $('#uploadingTextPercentage').text("Upload Completed");
             $('#uploadingTextSpan').hide();
-            $('#coverPhotoContentUploading').animate({'opacity': 0.8});
+            $('#coverPhotoContentUploading').animate({ 'opacity': 0.8 });
         }
 
         const startCoverPhotoUpload = (f) => {
@@ -124,46 +187,46 @@ angular
 
             // Listen for state changes, errors, and completion of the upload.
             coverPhotoUploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-                    function (snapshot) {
-                // Get task progress, including the number of bytes uploaded and the total
-                // number of bytes to be uploaded
-                var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                console.log('Upload is ' + progress + '% done');
-                onProgress(progress);
-                switch (snapshot.state) {
-                    case firebase.storage.TaskState.PAUSED: // or 'paused'
-                        console.log('Upload is paused');
-                        break;
-                    case firebase.storage.TaskState.RUNNING: // or 'running'
-                        console.log('Upload is running');
-                        break;
-                }
-            }, function (error) {
-                // A full list of error codes is available at
-                // https://firebase.google.com/docs/storage/web/handle-errors
-                switch (error.code) {
-                    case 'storage/unauthorized':
-                        // User doesn't have permission to access the object
-                        break;
+                function (snapshot) {
+                    // Get task progress, including the number of bytes uploaded and the total
+                    // number of bytes to be uploaded
+                    var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    console.log('Upload is ' + progress + '% done');
+                    onProgress(progress);
+                    switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED: // or 'paused'
+                            console.log('Upload is paused');
+                            break;
+                        case firebase.storage.TaskState.RUNNING: // or 'running'
+                            console.log('Upload is running');
+                            break;
+                    }
+                }, function (error) {
+                    // A full list of error codes is available at
+                    // https://firebase.google.com/docs/storage/web/handle-errors
+                    switch (error.code) {
+                        case 'storage/unauthorized':
+                            // User doesn't have permission to access the object
+                            break;
 
-                    case 'storage/canceled':
-                        // User canceled the upload
-                        break;
+                        case 'storage/canceled':
+                            // User canceled the upload
+                            break;
 
-                    case 'storage/unknown':
-                        // Unknown error occurred, inspect error.serverResponse
-                        break;
-                }
-            }, function () {
-                // Upload completed successfully, now we can get the download URL
-                coverPhotoUploadTask
-                    .snapshot
-                    .ref
-                    .getDownloadURL()
-                    .then(function (downloadURL) {
-                        coverPhotoUploadFinished();
-                    });
-            });
+                        case 'storage/unknown':
+                            // Unknown error occurred, inspect error.serverResponse
+                            break;
+                    }
+                }, function () {
+                    // Upload completed successfully, now we can get the download URL
+                    coverPhotoUploadTask
+                        .snapshot
+                        .ref
+                        .getDownloadURL()
+                        .then(function (downloadURL) {
+                            coverPhotoUploadFinished();
+                        });
+                });
         }
 
         $('#coverPhotoUpload')
@@ -183,7 +246,7 @@ angular
                             var aspect_ratio = image.width / image.height;
                             if (aspect_ratio != 2) {
                                 alert('Image size must be 1200 x 600 or must have 2:1 aspect ratio.\nPlease select anot' +
-                                        'her image and try again.');
+                                    'her image and try again.');
                                 coverPhotoFile = null;
                                 $scope.coverPhotoError = true;
                                 $scope.$digest();
@@ -247,7 +310,7 @@ angular
 
         $('#newRestContainer').hide();
         $rootScope.isLoading = true;
-        (async() => {
+        (async () => {
             await loadAllData();
             $rootScope.isLoading = false;
             $scope.$digest();
@@ -257,13 +320,13 @@ angular
 
         const searchMap = (query, token, cb, error) => {
             $http({
-                    method: "POST",
-                    url: "https://us-central1-dignpick.cloudfunctions.net/api/searchPlaces",
-                    data: {
-                        'query': query,
-                        'token': token
-                    }
-                })
+                method: "POST",
+                url: "https://us-central1-dignpick.cloudfunctions.net/api/searchPlaces",
+                data: {
+                    'query': query,
+                    'token': token
+                }
+            })
                 .then(function mySuccess(response) {
                     console.log(response);
                     var places = JSON
@@ -323,7 +386,7 @@ angular
             map.panTo(places_array[index].geometry.location);
             marker = new google
                 .maps
-                .Marker({position: places_array[index].geometry.location, map: map});
+                .Marker({ position: places_array[index].geometry.location, map: map });
             map.setZoom(14);
         }
 
@@ -335,7 +398,7 @@ angular
             map.panTo(branches_list[index].geometry);
             marker = new google
                 .maps
-                .Marker({position: branches_list[index].geometry, map: map});
+                .Marker({ position: branches_list[index].geometry, map: map });
             map.setZoom(14);
         }
 
@@ -462,7 +525,7 @@ angular
             db
                 .collection("branches")
                 .doc(id)
-                .set({'branches': branches_list})
+                .set({ 'branches': branches_list })
                 .then(function () {
                     console.log("Document successfully written!");
                     $rootScope.isLoading = false;
@@ -494,7 +557,7 @@ angular
         }
         $timeout(function () {
             init_map();
-            $('#mapSearchtable').bootstrapTable({data: table_data});
-            $('#branchesList').bootstrapTable({data: branches_list});
+            $('#mapSearchtable').bootstrapTable({ data: table_data });
+            $('#branchesList').bootstrapTable({ data: branches_list });
         });
     });
