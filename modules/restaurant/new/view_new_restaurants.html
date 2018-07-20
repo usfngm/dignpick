@@ -4,12 +4,12 @@
 <div id="newRestContainer" ng-controller="newRestCtrl">
     <h3>Add a New Restaurant</h3>
     <div id="newRestForm">
-        <form>
+        <form ng-submit="submit()">
             <h4 class="subRestFormTitle">Basic Information:</h4>
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label>Restaurant Name</label>
-                    <input class="form-control" ng-model="restName" placeholder="Name (Ex. T.G.I Fridays)">
+                    <input class="form-control" ng-model="restName" placeholder="Name (Ex. T.G.I Fridays)" required>
                 </div>
             </div>
             <div class="form-group">
@@ -123,11 +123,18 @@
             <h5 style="margin-top: 20px; margin-bottom: 15px;">Restaurant Gallery</h5>
             <input type="file" style="display: none;" accept="image/x-png,image/jpeg" id="galleryUpload" />
             <div id="galleryBigContainer">
-                <!-- <div ng-repeat="photo in galleryPhotos">
+                <div ng-repeat="photo in galleryPhotos">
                     <div id="{{photo.id}}" style="background-image: url({{photo.img}});" class="galleryItemContainer">
+                        <div class="galleryItemUploading">
 
+                        </div>
+                        <div class="galleryItemUploadingContent">
+                            <i id="{{photo.id}}ClosePhoto" class="fas fa-times closePhotoUploading"></i>
+                            <span id="{{photo.id}}Percentage" class="uploadingText">0%</span>
+                            <span id="{{photo.id}}uploadingText" class="uploadingText">Uploading...</span>
+                        </div>
                     </div>
-                </div> -->
+                </div>
                 <div id="galleryAddContainer">
                     <div id="galleryAddDefault">
                         <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="far fa-plus-square"></i>
@@ -138,7 +145,7 @@
             </div>
             <hr>
             <div class="form-group col-md-12">
-                <button ng-click="submit()" class="form-control btn btn-primary">Create Restaurant</button>
+                <input type="submit" class="form-control btn btn-primary" value="Create Restaurant" />
             </div>
 
             <div class="form-group col-md-12">

@@ -4,7 +4,7 @@
 <div id="editRestContainer" ng-controller="editRestCtrl">
     <h3>Edit Restaurant</h3>
     <div id="newRestForm">
-        <form>
+        <form ng-submit="submit()">
             <h4 class="subRestFormTitle">Basic Information:</h4>
 
             <div class="form-row">
@@ -17,7 +17,7 @@
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label>Restaurant Name</label>
-                    <input class="form-control" ng-model="restName" placeholder="Name (Ex. T.G.I Fridays)">
+                    <input class="form-control" ng-model="restName" placeholder="Name (Ex. T.G.I Fridays)" required>
                 </div>
             </div>
             <div class="form-group">
@@ -103,9 +103,59 @@
             <div class="form-group col-md-12">
                 <button ng-click="addManualBranch()" class="form-control btn btn-primary">Add to Branch List</button>
             </div>
+            <!--HOLA-->
+            <h4 class="subRestFormTitle">Restaurant Media:</h4>
+            <h5>Restaurant Cover Photo</h5>
+            <input type="file" style="display: none;" accept="image/x-png,image/jpeg" id="coverPhotoUpload" />
+            <span ng-show="coverPhotoError" style="color: red; font-weight: bold; margin-bottom: 15px;">*Cover photos must be 1200 x 600 or must have an aspect ratio of 2:1.</span>
+            <div id="coverPhotoContainer" class="pointerCrusor">
+                <div id="coverPhotoContentDefault">
+                    <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="fas fa-cloud-upload-alt"></i>
+                    <span style="color: #727272; text-align: center;">1200 x 600
+                        <br>or
+                        <br>2:1 aspect ratio</span>
+                </div>
+                <div id="coverPhotoContentHover">
+                    <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="fas fa-cloud-upload-alt"></i>
+                    <span style="color: #727272; text-align: center; font-size: 30px;">
+                        Click to Upload
+                    </span>
+                </div>
+                <div id="coverPhotoContentUploading">
+                </div>
+                <div id="coverPhotoContentUploadingContent" style="width: 100%; height: 100%;">
+                    <i id="closeCoverPhotoUploading" class="fas fa-times"></i>
+                    <span id="uploadingTextPercentage" class="uploadingText">0%</span>
+                    <span id="uploadingTextSpan" class="uploadingText">Uploading...</span>
+                </div>
+            </div>
+            <h5 style="margin-top: 20px; margin-bottom: 15px;">Restaurant Gallery</h5>
+            <input type="file" style="display: none;" accept="image/x-png,image/jpeg" id="galleryUpload" />
+            <div id="galleryBigContainer">
+                <div ng-repeat="photo in galleryPhotos">
+                    <div id="{{photo.id}}" style="background-image: url({{photo.img}});" class="galleryItemContainer">
+                        <div class="galleryItemUploading">
 
+                        </div>
+                        <div class="galleryItemUploadingContent">
+                            <i id="{{photo.id}}ClosePhoto" class="fas fa-times closePhotoUploading"></i>
+                            <span id="{{photo.id}}Percentage" class="uploadingText">0%</span>
+                            <span id="{{photo.id}}uploadingText" class="uploadingText">Uploading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="galleryAddContainer">
+                    <div id="galleryAddDefault">
+                        <i style="font-size: 40px; color:#727272; margin-bottom: 5px;" class="far fa-plus-square"></i>
+                        <span style="color: #727272; text-align: center; font-size: 20px;">Add New</span>
+                        <span style="color: #727272; text-align: center; font-size: 10px;">(1200 x 1200 or Square Image)</span>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <!--HOLA-->
             <div class="form-group col-md-12">
-                <button ng-click="submit()" class="form-control btn btn-success">Update Restaurant</button>
+                <input type="submit" class="form-control btn btn-primary" value="Update Restaurant"/>
             </div>
         </form>
         <div class="form-group col-md-12">

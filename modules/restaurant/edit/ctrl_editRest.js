@@ -4,6 +4,445 @@ angular
     .module("digAPP")
     .controller('editRestCtrl', function ($scope, $rootScope, $state, $stateParams, $window, $timeout, $http) {
 
+        //JQUERY VARS
+        var coverPhotoFile;
+        var currentGalleryFile;
+        var storageRef = firebase
+            .storage()
+            .ref();
+        var coverPhotoLoc;
+        var coverPhotoUploadTask;
+        var coverDownloadURL;
+        var currentRest;
+        $scope.galleryPhotos = [];
+
+        const checkPhotosStillUploading = () => {
+            if (coverPhotoFile && !coverDownloadURL) 
+                return true;
+            for (var i = 0; i < $scope.galleryPhotos.length; i++) {
+                if ($scope.galleryPhotos[i].finished == false) 
+                    return true;
+                }
+            return false;
+        }
+
+        const updateGalleryPhotos = () => {
+            console.log($scope.galleryPhotos);
+            for (var i = 0; i < $scope.galleryPhotos.length; i++) {
+                var obj = $scope.galleryPhotos[i];
+                if (!obj.img) {
+                    console.log("IN");
+                    $('#' + obj.id).css({
+                        'background-image': "url(" + obj.downloadURL + ")"
+                    });
+                    $('#' + obj.id + "Percentage").hide();
+                    $('#' + obj.id + "uploadingText").hide();
+                    $('#' + obj.id + "ClosePhoto").click(() => {
+                        var tempRest = JSON.parse(JSON.stringify(currentRest));
+                        $rootScope.isLoading = true;
+                        $rootScope.$digest();
+                        var removeIndex = tempRest
+                            .gallery
+                            .map(function (item) {
+                                return item.id;
+                            })
+                            .indexOf(obj.id);
+
+                        tempRest
+                            .gallery
+                            .splice(removeIndex, 1);
+
+                        db
+                            .collection("places")
+                            .doc($scope.uid)
+                            .set(tempRest)
+                            .then(() => {
+                                console.log("Deleteing " + currentRest.gallery[removeIndex].fileLoc);
+                                storageRef
+                                    .child(currentRest.gallery[removeIndex].fileLoc)
+                                    .delete()
+                                    .then(() => {
+                                        console.log(currentRest.gallery[removeIndex].fileLoc + " Deleted");
+                                        $rootScope.isLoading = false;
+                                        $rootScope.$digest();
+                                        currentRest = tempRest;
+                                        $scope.galleryPhotos = currentRest.gallery;
+                                        $scope.$digest();
+                                    })
+                                    .catch((error) => {
+                                        $rootScope.isLoading = false;
+                                        $rootScope.$digest();
+                                        toastr.error("Error");
+                                        console.log(error);
+                                    })
+                            })
+                            .catch((error) => {
+                                $rootScope.isLoading = false;
+                                $rootScope.$digest();
+                                toastr.error("Error");
+                                console.log(error);
+                            });
+
+                    });
+                }
+            }
+        }
+
+        $('#galleryAddContainer').click(() => {
+            $('#galleryUpload').click();
+        });
+
+        const startGalleryUpload = (obj) => {
+            var galleryPhotoUpload = storageRef
+                .child(obj.fileLoc)
+                .put(obj.file);
+
+            // Listen for state changes, errors, and completion of the upload.
+            galleryPhotoUpload.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                    function (snapshot) {
+                // Get task progress, including the number of bytes uploaded and the total
+                // number of bytes to be uploaded
+                var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                console.log('Upload is ' + progress + '% done');
+                $('#' + obj.id + 'Percentage').text(progress + "%");
+                switch (snapshot.state) {
+                    case firebase.storage.TaskState.PAUSED: // or 'paused'
+                        console.log('Upload is paused');
+                        break;
+                    case firebase.storage.TaskState.RUNNING: // or 'running'
+                        console.log('Upload is running');
+                        break;
+                }
+            }, function (error) {
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                    case 'storage/unauthorized':
+                        // User doesn't have permission to access the object
+                        break;
+
+                    case 'storage/canceled':
+                        // User canceled the upload
+                        break;
+
+                    case 'storage/unknown':
+                        // Unknown error occurred, inspect error.serverResponse
+                        break;
+                }
+            }, function () {
+                // Upload completed successfully, now we can get the download URL
+                galleryPhotoUpload
+                    .snapshot
+                    .ref
+                    .getDownloadURL()
+                    .then(function (downloadURL) {
+                        obj.finished = true;
+                        $('#' + obj.id + 'uploadingText').text("Uploaded");
+                        obj['downloadURL'] = downloadURL;
+                    });
+            });
+
+            console.log(galleryPhotoUpload.snapshot.state);
+
+            $('#' + obj.id + "ClosePhoto").click(() => {
+                var state = galleryPhotoUpload.snapshot.state;
+                console.log(state);
+                if (state == "running") {
+                    galleryPhotoUpload.cancel();
+                } else {
+                    $rootScope.isLoading = true;
+                    $rootScope.$digest();
+                    // Create a reference to the file to delete
+                    var deleteRef = storageRef.child(obj.fileLoc);
+
+                    console.log("Deleteing " + obj.fileLoc);
+                    // Delete the file
+                    deleteRef
+                        .delete()
+                        .then(() => {
+                            console.log(obj.fileLoc + " deleted");
+                            var removeIndex = $scope
+                                .galleryPhotos
+                                .map(function (item) {
+                                    return item.id;
+                                })
+                                .indexOf(obj.id);
+                            $scope
+                                .galleryPhotos
+                                .splice(removeIndex, 1);
+                            currentRest.gallery = $scope.galleryPhotos;
+                            $scope.$digest();
+                            updateGalleryPhotos();
+                            $rootScope.isLoading = false;
+                            $rootScope.$digest();
+                        })
+                        .catch(() => {
+                            $rootScope.isLoading = false;
+                            $rootScope.$digest();
+                            toastr.error("Error");
+                        });
+                }
+
+            });
+        }
+
+        $('#galleryUpload')
+            .change(function (ev) {
+                var _URL = window.URL || window.webkitURL;
+                currentGalleryFile = document
+                    .getElementById('galleryUpload')
+                    .files[0];
+                if (currentGalleryFile) {
+                    console.log(currentGalleryFile);
+                    if (!currentGalleryFile.type.includes("image")) {
+                        alert("Unsupported format, please try again.")
+                        currentGalleryFile = null;
+                    } else {
+                        var image = new Image();
+                        image.src = _URL.createObjectURL(currentGalleryFile);
+                        image.onload = function () {
+                            console.log("IMAGE LOADED");
+                            var aspect_ratio = image.width / image.height;
+                            if (aspect_ratio != 1) {
+                                alert('Image size must be 1200 x 1200 or must have 1:1 aspect ratio (Square Image). Ple' +
+                                        'ase select another image and try again.');
+                                currentGalleryFile = null;
+                            } else {
+                                var obj = {
+                                    'file': currentGalleryFile,
+                                    'finished': false,
+                                    'img': image.src,
+                                    'id': currentGalleryFile
+                                        .name
+                                        .split('.')
+                                        .join("") + Date.now(),
+                                    'fileLoc': 'gallery/' + currentGalleryFile.name + Date.now(),
+                                    'downloadURL': null
+                                }
+                                console.log(obj.file);
+                                $scope
+                                    .galleryPhotos
+                                    .push(obj);
+                                currentRest.gallery = $scope.galleryPhotos;
+                                $scope.$digest();
+                                $('#galleryUpload').val('');
+                                startGalleryUpload(obj);
+                            }
+                        };
+                        image.onerror = (er) => {
+                            console.log(er);
+                            console.log("ERROR");
+                        };
+                        console.log("IM HERE WAITING FOR IMAGE LOAD");
+                    }
+                }
+            });
+
+        var dotCount = 1;
+        setInterval(function () {
+            if (dotCount == 1) {
+                $('#uploadingTextSpan').text('Uploading.');
+            } else if (dotCount == 2) {
+                $('#uploadingTextSpan').text('Uploading..');
+            } else if (dotCount == 3) {
+                $('#uploadingTextSpan').text('Uploading...');
+                dotCount = 0;
+            }
+            dotCount++;
+        }, 500);
+
+        //JQUERY
+        const listenForCoverPhotoUploadEvents = () => {
+            $('#coverPhotoContainer').click(() => {
+                $('#coverPhotoUpload').click();
+            })
+
+            $('#coverPhotoContainer').mouseenter(() => {
+                $('#coverPhotoContentDefault').hide();
+                $('#coverPhotoContentHover').show();
+                $('#coverPhotoContentHover').css('display', 'flex');
+            });
+
+            $('#coverPhotoContainer').mouseleave(() => {
+                $('#coverPhotoContentHover').hide();
+                $('#coverPhotoContentDefault').show();
+            });
+        }
+
+        const stopListeningForCoverPhotoUploadEvents = () => {
+            $('#coverPhotoContainer').unbind('mouseleave');
+            $('#coverPhotoContainer').unbind('mouseenter');
+            $('#coverPhotoContainer').unbind('click');
+        }
+
+        $('#closeCoverPhotoUploading').click(() => {
+            if (coverPhotoUploadTask) {
+                var state = coverPhotoUploadTask.snapshot.state;
+                console.log(state);
+                if (state == "running") {
+                    coverPhotoUploadTask.cancel();
+                } else {
+                    // Create a reference to the file to delete
+                    var deleteRef = storageRef.child(coverPhotoLoc);
+                    // Delete the file
+                    deleteRef.delete();
+                }
+            } else {
+                currentRest.coverPhotoURL = null;
+                currentRest.coverPhotoLoc = null;
+                $rootScope.isLoading = true;
+                $rootScope.$digest();
+                db
+                    .collection("places")
+                    .doc($scope.uid)
+                    .set(currentRest)
+                    .then(() => {
+                        console.log("Deleteing " + coverPhotoLoc);
+                        storageRef
+                            .child(coverPhotoLoc)
+                            .delete()
+                            .then(() => {
+                                console.log(coverPhotoLoc + " Deleted");
+                                $rootScope.isLoading = false;
+                                $rootScope.$digest();
+
+                                $("#coverPhotoContainer").css({'background-image': "none"});
+                                $('#coverPhotoContentHover').show();
+                                $('#coverPhotoContentHover').css('display', 'flex');
+                                $('#coverPhotoContentUploading').hide();
+                                $('#coverPhotoContainer').addClass('pointerCrusor');
+                                $("#coverPhotoUpload").val("");
+                                $('#coverPhotoContentUploadingContent').hide();
+                                coverPhotoLoc = null;
+                                coverPhotoUploadTask = null;
+                                coverPhotoFile = null;
+                                coverDownloadURL = null;
+                                setTimeout(listenForCoverPhotoUploadEvents, 100);
+
+                            })
+                            .catch((e) => {
+                                console.log(e);
+                                $rootScope.isLoading = false;
+                                $rootScope.$digest();
+                                toastr.error("Error");
+                            })
+
+                    })
+                    .catch(() => {
+                        $rootScope.isLoading = false;
+                        $rootScope.$digest();
+                        toastr.error("Error");
+                    })
+            }
+
+        });
+
+        listenForCoverPhotoUploadEvents();
+
+        const onProgress = (progress) => {
+            $('#uploadingTextPercentage').text(progress + "%");
+        }
+
+        const coverPhotoUploadFinished = (downloadURL) => {
+            coverDownloadURL = downloadURL;
+            $('#uploadingTextPercentage').text("Upload Completed");
+            $('#uploadingTextSpan').hide();
+        }
+
+        const startCoverPhotoUpload = (f) => {
+            coverPhotoLoc = 'place_cover_photos/' + f.name + Date.now();
+            coverPhotoUploadTask = storageRef
+                .child(coverPhotoLoc)
+                .put(f);
+
+            // Listen for state changes, errors, and completion of the upload.
+            coverPhotoUploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                    function (snapshot) {
+                // Get task progress, including the number of bytes uploaded and the total
+                // number of bytes to be uploaded
+                var progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                console.log('Upload is ' + progress + '% done');
+                onProgress(progress);
+                switch (snapshot.state) {
+                    case firebase.storage.TaskState.PAUSED: // or 'paused'
+                        console.log('Upload is paused');
+                        break;
+                    case firebase.storage.TaskState.RUNNING: // or 'running'
+                        console.log('Upload is running');
+                        break;
+                }
+            }, function (error) {
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                    case 'storage/unauthorized':
+                        // User doesn't have permission to access the object
+                        break;
+
+                    case 'storage/canceled':
+                        // User canceled the upload
+                        break;
+
+                    case 'storage/unknown':
+                        // Unknown error occurred, inspect error.serverResponse
+                        break;
+                }
+            }, function () {
+                // Upload completed successfully, now we can get the download URL
+                coverPhotoUploadTask
+                    .snapshot
+                    .ref
+                    .getDownloadURL()
+                    .then(function (downloadURL) {
+                        coverPhotoUploadFinished(downloadURL);
+                    });
+            });
+        }
+
+        $('#coverPhotoUpload')
+            .change(function (ev) {
+                var _URL = window.URL || window.webkitURL;
+                coverPhotoFile = document
+                    .getElementById('coverPhotoUpload')
+                    .files[0];
+                if (coverPhotoFile) {
+                    if (!coverPhotoFile.type.includes("image")) {
+                        alert("Unsupported format, please try again.")
+                        coverPhotoFile = null;
+                    } else {
+                        var image = new Image();
+                        image.src = _URL.createObjectURL(coverPhotoFile);
+                        image.onload = function () {
+                            var aspect_ratio = image.width / image.height;
+                            if (aspect_ratio != 2) {
+                                alert('Image size must be 1200 x 600 or must have 2:1 aspect ratio.\nPlease select anot' +
+                                        'her image and try again.');
+                                coverPhotoFile = null;
+                                $scope.coverPhotoError = true;
+                                $scope.$digest();
+                            } else {
+                                $('#uploadingTextPercentage').text("0%");
+                                $('#uploadingTextSpan').show();
+                                $('#coverPhotoContentUploading').css('opacity', 0.5);
+                                stopListeningForCoverPhotoUploadEvents();
+                                $scope.coverPhotoError = false;
+                                $scope.$digest();
+                                $("#coverPhotoContainer").css({
+                                    'background-image': "url(" + image.src + ")"
+                                });
+                                $('#coverPhotoContentHover').hide();
+                                $('#coverPhotoContentDefault').hide();
+                                $('#coverPhotoContentUploading').show();
+                                $('#coverPhotoContainer').removeClass('pointerCrusor');
+                                $('#coverPhotoContentUploadingContent').show();
+                                $('#coverPhotoContentUploadingContent').css('display', 'flex');
+                                startCoverPhotoUpload(coverPhotoFile);
+                            }
+                        };
+                    }
+                }
+            });
+
         $scope.uid = $stateParams.restID;
         console.log('EDIT ' + $scope.uid);
         $('#editRestContainer').hide();
@@ -45,8 +484,8 @@ angular
                 .collection("places")
                 .doc($scope.uid)
                 .get();
-
             setRestData(restaurant.data());
+            currentRest = restaurant.data();
 
             let branches = await db
                 .collection("branches")
@@ -95,6 +534,84 @@ angular
                         checkTag(key);
                     }
                 });
+            if (data.coverPhotoURL) {
+                coverDownloadURL = data.coverPhotoURL;
+                coverPhotoLoc = data.coverPhotoLoc;
+                stopListeningForCoverPhotoUploadEvents();
+                $("#coverPhotoContainer").css({
+                    'background-image': "url(" + data.coverPhotoURL + ")"
+                });
+                $('#coverPhotoContentHover').hide();
+                $('#coverPhotoContentDefault').hide();
+                $('#coverPhotoContentUploading').show();
+                $('#coverPhotoContainer').removeClass('pointerCrusor');
+                $('#coverPhotoContentUploadingContent').show();
+                $('#coverPhotoContentUploadingContent').css('display', 'flex');
+                $('#uploadingTextPercentage').hide();
+                $('#uploadingTextSpan').hide();
+            }
+            if (data.gallery) {
+                $scope.galleryPhotos = data.gallery;
+                $scope.$digest();
+                for (var i = 0; i < $scope.galleryPhotos.length; i++) {
+                    var obj = $scope.galleryPhotos[i];
+                    obj['finished'] = true;
+                    console.log(obj.id + "Percentage");
+                    $('#' + obj.id).css({
+                        'background-image': "url(" + obj.downloadURL + ")"
+                    });
+                    $('#' + obj.id + "Percentage").hide();
+                    $('#' + obj.id + "uploadingText").hide();
+                    $('#' + obj.id + "ClosePhoto").click(() => {
+                        var tempRest = JSON.parse(JSON.stringify(currentRest));
+                        $rootScope.isLoading = true;
+                        $rootScope.$digest();
+                        var removeIndex = tempRest
+                            .gallery
+                            .map(function (item) {
+                                return item.id;
+                            })
+                            .indexOf(obj.id);
+
+                        tempRest
+                            .gallery
+                            .splice(removeIndex, 1);
+
+                        db
+                            .collection("places")
+                            .doc($scope.uid)
+                            .set(tempRest)
+                            .then(() => {
+                                console.log("Deleteing " + currentRest.gallery[removeIndex].fileLoc);
+                                storageRef
+                                    .child(currentRest.gallery[removeIndex].fileLoc)
+                                    .delete()
+                                    .then(() => {
+                                        console.log(currentRest.gallery[removeIndex].fileLoc + " Deleted");
+                                        $rootScope.isLoading = false;
+                                        $rootScope.$digest();
+                                        currentRest = tempRest;
+                                        $scope.galleryPhotos = currentRest.gallery;
+                                        $scope.$digest();
+                                        updateGalleryPhotos();
+                                    })
+                                    .catch((error) => {
+                                        $rootScope.isLoading = false;
+                                        $rootScope.$digest();
+                                        toastr.error("Error");
+                                        console.log(error);
+                                    })
+                            })
+                            .catch((error) => {
+                                $rootScope.isLoading = false;
+                                $rootScope.$digest();
+                                toastr.error("Error");
+                                console.log(error);
+                            });
+
+                    });
+                }
+            }
         }
 
         const searchMap = (query, token, cb, error) => {
@@ -252,19 +769,50 @@ angular
         }
 
         $scope.submit = () => {
+            if (checkPhotosStillUploading()) {
+                alert("Please wait til all the uploading is done and try again.");
+                return;
+            }
             $rootScope.isLoading = true;
 
-            var obj ={
-                name: $scope.restName,
-                description: $scope.restDescription,
-                foodType: $scope.restFoodType,
-                hotline: $scope.restHotline,
-                tags: {}
+            var galleryItems = [];
+            $scope
+                .galleryPhotos
+                .forEach((photo) => {
+                    var newObj = {
+                        'id': photo.id,
+                        'fileLoc': photo.fileLoc,
+                        'downloadURL': photo.downloadURL
+                    };
+                    galleryItems.push(newObj);
+                })
+
+            var obj = {
+                'name': $scope.restName,
+                'description': $scope.restDescription
+                    ? $scope.restDescription
+                    : '',
+                'foodType': $scope.restFoodType
+                    ? $scope.restFoodType
+                    : '',
+                'hotline': $scope.restHotline
+                    ? $scope.restHotline
+                    : '',
+                'tags': {},
+                'coverPhotoURL': coverDownloadURL
+                    ? coverDownloadURL
+                    : null,
+                'coverPhotoLoc': coverPhotoLoc
+                    ? coverPhotoLoc
+                    : null,
+                'gallery': galleryItems
             }
 
-            $scope.rest_tags.forEach((tag) => {
-                obj.tags[tag.name] = tag.selected;
-            });
+            $scope
+                .rest_tags
+                .forEach((tag) => {
+                    obj.tags[tag.name] = tag.selected;
+                });
 
             db
                 .collection("places")

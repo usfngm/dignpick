@@ -11,17 +11,12 @@ angular
             .then(function (querySnapshot) {
                 var i = 1;
                 querySnapshot.forEach(function (doc) {
-                    var place = {
-                        'id': i,
-                        'name': doc
-                            .data()
-                            .name,
-                        'uid': doc.id,
-                    };
+                    var place = doc.data();
+                    place['uid'] = doc.id;
                     data.push(place);
                     i++;
                 });
-                $('#table').bootstrapTable({ data: data });
+                $('#table').bootstrapTable({data: data});
                 $rootScope.isLoading = false;
                 $rootScope.$digest();
                 $('#manageRestContainer').show();
@@ -29,16 +24,13 @@ angular
 
         $scope.editPlace = (uid) => {
             var index = getIndexFromUID(data, uid);
-            $state.go('editRest', { 'restID': data[index].uid });
+            $state.go('editRest', {'restID': data[index].uid});
         }
 
         $scope.editMenu = (uid) => {
             var index = getIndexFromUID(data, uid);
             $rootScope.currentRest = data[index].name;
-            $state.go('editMenu',
-                {
-                    'restID': data[index].uid
-                });
+            $state.go('editMenu', {'restID': data[index].uid});
         }
 
         $scope.deletePlace = (uid) => {
@@ -55,35 +47,68 @@ angular
                         className: 'btn-danger'
                     }
                 },
-                callback: function (result) {
+                callback: async function (result) {
                     if (result) {
-                        var docRef = db.collection('places').doc(data[index].uid);
-                        $rootScope.isLoading = true;
-                        $rootScope.$digest();
-                        docRef.delete().then((doc) => {
-                            docRef = db.collection('branches').doc(data[index].uid);
-                            docRef.delete().then((doc) => {
-                                $rootScope.isLoading = false;
-                                $rootScope.$digest();
-                                toastr.success("Place Deleted");
-                                console.log("Document successfully deleted!");
-                                data.splice(index, 1);
-                                $('#table').bootstrapTable('load', data);
-                            }).catch((error) => {
-                                $rootScope.isLoading = false;
-                                $rootScope.$digest();
-                                toastr.error("Error in place deleting");
-                                console.error("Error removing document: ", error);
-                            });
-                        }).catch((error) => {
+                        try {
+                            console.log(data[index]);
+                            $rootScope.isLoading = true;
+                            $rootScope.$digest();
+
+                            var storageRef = firebase
+                                .storage()
+                                .ref();
+
+                            if (data[index].coverPhotoLoc) {
+                                console.log("DELETING " + data[index].coverPhotoLoc);
+                                await storageRef
+                                    .child(data[index].coverPhotoLoc)
+                                    .delete();
+                                console.log(data[index].coverPhotoLoc + " DELETED");
+                            }
+
+                            for (var i = 0; i < data[index].gallery.length; i++) {
+                                console.log("DELETING " + data[index].gallery[i].fileLoc);
+                                await storageRef
+                                    .child(data[index].gallery[i].fileLoc)
+                                    .delete();
+                                console.log(data[index].gallery[i].fileLoc + " DELETED");
+                            }
+                        } catch (e) {
+                            console.log(e.t);
+                        }
+
+                        try {
+
+                            await db
+                                .collection('places')
+                                .doc(data[index].uid)
+                                .delete();
+
+                            await db
+                                .collection('branches')
+                                .doc(data[index].uid)
+                                .delete();
+
                             $rootScope.isLoading = false;
                             $rootScope.$digest();
-                            toastr.error("Error in place deleting");
-                            console.error("Error removing document: ", error);
-                        })
+                            toastr.success("Place Deleted");
+                            console.log("Document successfully deleted!");
+                            data.splice(index, 1);
+                            $('#table').bootstrapTable('load', data);
+
+                        } catch (e) {
+                            $rootScope.isLoading = false;
+                            $rootScope.$digest();
+                            toastr.error("Error in Deletion");
+                        }
+
                     }
                 }
             });
+        }
+
+        formatID = (value, row, index, field) => {
+            return index + 1;
         }
 
         formatDeletePlaceButton = (value, row, index, field) => {
@@ -101,6 +126,5 @@ angular
         $scope.createPlace = () => {
             $state.go('newRest');
         };
-
 
     });
