@@ -26,14 +26,67 @@ angular
 
         $rootScope.isLoading = true;
 
+        $scope.deleteAd = () => {
+            $('#createAdModal').modal('hide');
+            $rootScope.isLoading = true;
+            if (data[manageIndex].uploadLoc) {
+                storageRef
+                    .child(data[manageIndex].uploadLoc)
+                    .delete()
+                    .then(() => {
+                        db
+                            .collection('ads')
+                            .doc(data[manageIndex].uid)
+                            .delete()
+                            .then(() => {
+                                data.splice(manageIndex, 1);
+                                $('#manageAdsTable').bootstrapTable('load', data);
+                                toastr.success("Ad Deleted");
+                                $rootScope.isLoading = false;
+                                $rootScope.$digest();
+                            })
+                            .catch(() => {
+                                toastr.error("Deleting Error");
+                                $rootScope.isLoading = false;
+                                $rootScope.$digest();
+                            });
+                    })
+                    .catch(() => {
+                        toastr.error("Deleting Error");
+                        $rootScope.isLoading = false;
+                        $rootScope.$digest();
+                    });
+                // Delete the file
+            } else {
+                db
+                    .collection('ads')
+                    .doc(data[manageIndex].uid)
+                    .delete()
+                    .then(() => {
+                        data.splice(manageIndex, 1);
+                        $('#manageAdsTable').bootstrapTable('load', data);
+                        toastr.success("Ad Deleted");
+                        $rootScope.isLoading = false;
+                        $rootScope.$digest();
+                    })
+                    .catch(() => {
+                        toastr.error("Deleting Error");
+                        $rootScope.isLoading = false;
+                        $rootScope.$digest();
+                    });
+            }
+        }
+
         changeModalMode = (mode) => {
             if (mode == 'create') {
                 modalMode = mode;
+                $('#deleteAdModalBtn').hide();
                 $('#adModal').text('New Ad');
                 $('#createAdModalSubmitBtn').attr('value', 'Add');
                 $('#customFile').attr("required", true);
             } else if (mode == 'manage') {
                 modalMode = mode;
+                $('#deleteAdModalBtn').show();
                 $('#adModal').text('Manage Ad');
                 $('#createAdModalSubmitBtn').attr('value', 'Update');
                 $('#customFile').removeAttr("required");
@@ -670,15 +723,17 @@ angular
                 ? 'yes'
                 : 'no';
             $scope.fileName = data[index].uploadLoc;
-            if (data[index].filter.age) {
-                $scope.fromAgeFilter = data[index].filter.age.from;
-                $scope.toAgeFilter = data[index].filter.age.to;
+            if (data[index].filter) {
+                if (data[index].filter.age) {
+                    $scope.fromAgeFilter = data[index].filter.age.from;
+                    $scope.toAgeFilter = data[index].filter.age.to;
+                }
+                if (data[index].filter.gender) {
+                    $scope.maleGenderFilter = data[index].filter.gender == 'male';
+                    $scope.femaleGenderFilter = data[index].filter.gender == 'female';
+                }
+                loadDataIntoLocationTable(data[index].filter.location);
             }
-            if (data[index].filter.gender) {
-                $scope.maleGenderFilter = data[index].filter.gender == 'male';
-                $scope.femaleGenderFilter = data[index].filter.gender == 'female';
-            }
-            loadDataIntoLocationTable(data[index].filter.location);
             $scope.$digest();
         }
 

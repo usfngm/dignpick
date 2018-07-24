@@ -40,18 +40,38 @@
             </div>
         </div>
         <div class="form-row">
-            <div class="form-group col-md-12">
-                <label>Country</label>
-                <input id="userCountry" class="form-control" ng-model="userCountry" placeholder="Country (Ex. Egypt)">
+                <div class="form-group col-md-12">
+                    <label>Country</label>
+                    <select ng-change="countryChanged(userCountry)" ng-model="userCountry" class="form-control">
+                        <option value=''>Choose</option>
+                        <option ng-repeat="country in countries" value="{{country.name}}">
+                            {{country.name}}
+                        </option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group col-md-12">
-                <label>City</label>
-                <input id="userCity" class="form-control" ng-model="userCity" placeholder="City (Ex. Cairo)">
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>State</label>
+                    <select ng-change="stateChanged(userState)" ng-model="userState" class="form-control">
+                        <option value=''>Choose</option>
+                        <option ng-repeat="state in states" value="{{state.name}}">
+                            {{state.name}}
+                        </option>
+                    </select>
+                </div>
             </div>
-        </div>
-
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label>Area</label>
+                    <select ng-model="userArea" class="form-control">
+                        <option value=''>Choose</option>
+                        <option ng-repeat="area in areas" value="{{area.name}}">
+                            {{area.name}}
+                        </option>
+                    </select>
+                </div>
+            </div>
         <div style="margin-top: 20px;" class="form-group col-md-12">
             <input type="submit" class="form-control btn btn-primary" value="Edit User" />
         </div>

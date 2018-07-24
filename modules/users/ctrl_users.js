@@ -1,40 +1,93 @@
 angular
     .module("digAPP")
     .controller('usersCtrl', function ($scope, $rootScope, $state, $http, $window) {
-        $('#manageUsersContainer').hide();
         $scope.userLevel = 'User';
         $scope.isWrong = false;
         var data = [];
-        var docRef = db.collection('users');
+        var locationsData = [];
+        var parentCountry;
+
+        loadAllData = async function () {
+
+            let users = await db
+                .collection('users')
+                .get();
+            let locations = await db
+                .collection('locations')
+                .get();
+
+            users.forEach((user) => {
+                var temp = user.data();
+                temp['uid'] = user.id;
+                data.push(temp);
+            });
+
+            locations.forEach((location) => {
+                var temp = location.data();
+                temp['uid'] = location.id;
+                locationsData.push(temp);
+            });
+
+            $scope.countries = locationsData;
+
+            $('#manageUsersTable').bootstrapTable({data: data});
+
+        }
+
+        $('#manageUsersContainer').hide();
         $rootScope.isLoading = true;
-        docRef
-            .get()
-            .then(function (querySnapshot) {
-                var i = 1;
-                querySnapshot.forEach(function (doc) {
-                    // doc.data() is never undefined for query doc snapshots
-                    var user = {
-                        'uid': doc.data().uid,
-                        'name': doc
-                            .data()
-                            .name,
-                        'email': doc.data().email,
-                        'city': doc.data().city,
-                        'mobile': doc.data().mobile,
-                        'level': doc.data().level
-                  };
-                    data.push(user);
-                    i++;
-                });
-                $('#manageUsersTable').bootstrapTable({ data: data });
+        (async() => {
+            try {
+                await loadAllData();
                 $rootScope.isLoading = false;
+                $scope.$digest();
                 $rootScope.$digest();
                 $('#manageUsersContainer').show();
-            });
+            } catch (e) {
+                $rootScope.isLoading = false;
+                $scope.$digest();
+                $rootScope.$digest();
+                toastr.error("Loading Error");
+            }
+
+        })()
+
+        $scope.countryChanged = (countryName) => {
+            if (countryName) {
+                for (var i = 0; i < locationsData.length; i++) {
+                    if (locationsData[i].name == countryName) {
+                        parentCountry = locationsData[i];
+                        parentCountryIndex = i;
+                        $scope.states = parentCountry.states;
+                        break;
+                    }
+                }
+            } else {
+                $scope.states = null;
+                $scope.areas = null;
+            }
+        }
+
+        $scope.stateChanged = (stateName) => {
+            if (stateName) {
+                for ( var i = 0; i < parentCountry.states.length; i++ )
+                {
+                    if ( parentCountry.states[i].name == stateName )
+                    {
+                        parentState = parentCountry.states[i];
+                        parentStateIndex = i;
+                        $scope.areas = parentCountry.states[i].areas;
+                        break;
+                    }
+                }
+            } else {
+                $scope.areas = null;
+            }
+        }
 
         $scope.manageUser = (uid) => {
             var index = getIndexFromUID(data, uid);
-            $state.go('manageUser', { 'userID': data[index].uid });
+            $state.go('manageUser', {'userID': data[index].uid});
         }
 
         $scope.deleteUser = (uid) => {
@@ -60,12 +113,12 @@ angular
                         $rootScope.isLoading = true;
                         $rootScope.$digest();
                         $http({
-                            method: "POST",
-                            url: "https://us-central1-dignpick.cloudfunctions.net/api/deleteUser",
-                            data: {
-                                'uid': data[index].uid
-                            }
-                        }).then(function mySuccess(response) {
+                                method: "POST",
+                                url: "https://us-central1-dignpick.cloudfunctions.net/api/deleteUser",
+                                data: {
+                                    'uid': data[index].uid
+                                }
+                            }).then(function mySuccess(response) {
                             $rootScope.isLoading = false;
                             toastr.success("User Deleted");
                             console.log("Document successfully deleted!");
@@ -101,18 +154,19 @@ angular
                 'name': $scope.userName,
                 'password': $scope.userPassword,
                 'mobile': $scope.userMobile,
-                'city': $scope.userCity,
+                'state': $scope.userCity,
                 'country': $scope.userCountry,
+                'area': $scope.userArea,
                 'level': $scope.userLevel
             };
 
             $http({
-                method: "POST",
-                url: "https://us-central1-dignpick.cloudfunctions.net/api/registerNewUser",
-                data: {
-                    'user': user
-                }
-            }).then(function mySuccess(response) {
+                    method: "POST",
+                    url: "https://us-central1-dignpick.cloudfunctions.net/api/registerNewUser",
+                    data: {
+                        'user': user
+                    }
+                }).then(function mySuccess(response) {
                 var createdUser = response.data.user;
                 data.push(createdUser);
                 $('#manageUsersTable').bootstrapTable('load', data);
